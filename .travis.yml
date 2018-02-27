@@ -1,19 +1,12 @@
+sudo: required
+
 language: cpp
 
-matrix:
-  include:
-    - os: linux
-      dist: xenial
-      sudo: false
-      compiler: gcc
-      addons:
-       apt:
-         packages:
-           - build-essential
-           - cmake
-           - ocl-icd-opencl-dev
-           - libuv1-dev
-           - libmicrohttpd-dev
+services:
+  - docker
+
+before_install:
+  - docker build .
 
 script:
-     - sh build.sh
+  - echo Done
