@@ -1,0 +1,18 @@
+language: cpp
+
+matrix:
+  include:
+    - os: linux
+      dist: trusty
+      sudo: false
+      compiler: gcc
+      addons:
+       apt:
+         packages:
+           - build-essential
+           - cmake
+           - libuv-dev
+           - libmicrohttpd-dev
+
+script:
+     - sh build.sh
