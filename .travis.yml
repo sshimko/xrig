@@ -11,6 +11,7 @@ matrix:
          packages:
            - build-essential
            - cmake
+           - ocl-icd-opencl-dev
            - libuv-dev
            - libmicrohttpd-dev
 
