@@ -1,3 +1,5 @@
+![](https://travis-ci.org/arnesson/xrig.svg?branch=master)
+
 # Xrig
 Xrig is a high performance cryptonight miner for AMD cards. Optimized for large-scale use of RX Vega.
 
