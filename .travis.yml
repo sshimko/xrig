@@ -12,6 +12,7 @@ matrix:
            - build-essential
            - cmake
            - ocl-icd-opencl-dev
+           - fglrx  # amd catalyst, needed for ADL
            - libuv-dev
            - libmicrohttpd-dev
 
