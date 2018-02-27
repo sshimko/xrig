@@ -1,132 +1,56 @@
-<<<<<<< HEAD
-# XMRig AMD
-[![Github All Releases](https://img.shields.io/github/downloads/xmrig/xmrig-amd/total.svg)](https://github.com/xmrig/xmrig-amd/releases)
-[![GitHub release](https://img.shields.io/github/release/xmrig/xmrig-amd/all.svg)](https://github.com/xmrig/xmrig-amd/releases)
-[![GitHub Release Date](https://img.shields.io/github/release-date-pre/xmrig/xmrig-amd.svg)](https://github.com/xmrig/xmrig-amd/releases)
-[![GitHub license](https://img.shields.io/github/license/xmrig/xmrig-amd.svg)](https://github.com/xmrig/xmrig-amd/blob/master/LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/xmrig/xmrig-amd.svg)](https://github.com/xmrig/xmrig-amd/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/xmrig/xmrig-amd.svg)](https://github.com/xmrig/xmrig-amd/network)
+[![Build Status](https://travis-ci.org/arnesson/xrig.svg?branch=master)](https://travis-ci.org/arnesson/xrig)
 
-XMRig is high performance Monero (XMR) OpenCL miner, with the official full Windows support.
-
-GPU mining part based on [Wolf9466](https://github.com/OhGodAPet) and [psychocrypt](https://github.com/psychocrypt) code.
-
-* This is the AMD (OpenCL) GPU mining version, there is also a [CPU version](https://github.com/xmrig/xmrig) and [NVIDIA GPU version](https://github.com/xmrig/xmrig-nvidia).
-* [Roadmap](https://github.com/xmrig/xmrig/issues/106) for next releases.
-
-:warning: Suggested values for GPU auto configuration can be not optimal or not working, you may need tweak your threads options. Please fell free open an [issue](https://github.com/xmrig/xmrig-amd/issues) if auto configuration suggest wrong values.
-
-<img src="https://i.imgur.com/TFncsi7.png" width="696" >
-
-#### Table of contents
-* [Features](#features)
-* [Download](#download)
-* [Usage](#usage)
-* [Build](https://github.com/xmrig/xmrig-amd/wiki/Build)
-* [Donations](#donations)
-* [Contacts](#contacts)
-
-## Features
-* High performance.
-* Official Windows support.
-* Support for backup (failover) mining server.
-* CryptoNight-Lite support for AEON.
-* Automatic GPU configuration.
-* Nicehash support.
-* It's open source software.
-
-## Download
-* Binary releases: https://github.com/xmrig/xmrig-amd/releases
-* Git tree: https://github.com/xmrig/xmrig-amd.git
-  * Clone with `git clone https://github.com/xmrig/xmrig-amd.git`  :hammer: [Build instructions](https://github.com/xmrig/xmrig-amd/wiki/Build).
-
-## Usage
-Use [config.xmrig.com](https://config.xmrig.com/amd) to generate, edit or share configurations.
-=======
 # Xrig
-Xrig is a high performance cryptonight miner for AMD cards. Optimized for large-scale use of RX Vega.
+Xrig is a high performance cryptonight miner for AMD cards. Designed for large-scale use of RX Vega.
 
-GPU mining based on [Wolf9466](https://github.com/OhGodAPet) and [psychocrypt](https://github.com/psychocrypt) code. Forked from [XMRig AMD](https://github.com/xmrig/xmrig-amd)
+GPU mining based on [Wolf9466](https://github.com/OhGodAPet) and [psychocrypt](https://github.com/psychocrypt) code. Forked with love from [XMRig AMD](https://github.com/xmrig/xmrig-amd).
 <!--
 <img src="https://i.imgur.com/TFncsi7.png" width="696" >
 -->
 ## Features
 * High performance
-* Optimized for large-scale use of RX Vega
-* Powerful API
-* Hardware monitoring
-* Built-in OverdriveN capabilities
-* High level of auto configuration
+* Designed for large-scale use of RX Vega, but will run any AMD card
+* High level of automation necessary for managing many cards
+* Rich API
+* Hardware monitoring (fans, temperature, clock speeds, performance levels)
+* OverdriveN capabilities (set your under/overclock profile in config.json - replaces Wattman and OverdriveNTool)
+* Fixes the different shenanigans of mining on the Vega's (e.g. the "underclock toggle" and gpu reset)
 * Windows and Linux support
-* 1% dev donation
+* Pre-compiled binary has 1% dev donation (donation runs at start rather than after x minutes)
+
+## Work-in-progress
+* Option(s) for automatic fine-tuning of each individual card during mining. This should maximize the utilization of each card and increase the hashrate over time
 
 ## Usage
->>>>>>> initial commit
 
 ### Command line options
 ```
   -a, --algo=ALGO           cryptonight (default) or cryptonight-lite
   -o, --url=URL             URL of mining server
-<<<<<<< HEAD
-  -O, --userpass=U:P        username:password pair for mining server
-  -u, --user=USERNAME       username for mining server
-  -p, --pass=PASSWORD       password for mining server
-  -k, --keepalive           send keepalived for prevent timeout (need pool support)
-  -r, --retries=N           number of times to retry before switch to backup server (default: 5)
-  -R, --retry-pause=N       time to pause between retries (default: 5)
-      --opencl-devices=N    list of OpenCL devices to use.
-      --opencl-launch=IxW   list of launch config, intensity and worksize
-      --opencl-affinity=N   affine GPU threads to a CPU
-      --opencl-platform=N   OpenCL platform index
-      --no-color            disable colored output
-      --donate-level=N      donate level, default 5% (5 minutes in 100 minutes)
-      --user-agent          set custom user-agent string for pool
-  -B, --background          run the miner in the background
-=======
   -u, --user=USERNAME       username for mining server
   -p, --pass=PASSWORD       password for mining server
   -k, --keepalive           send keepalive to prevent timeout (needs pool support)
       --intensity=N         thread intensity
       --platform-index=N    OpenCL platform index
-      --no-color            disable colored output
+      --colors              enable colored output
   -b, --background          run the miner in the background
->>>>>>> initial commit
   -c, --config=FILE         load a JSON-format configuration file
-  -l, --log-file=FILE       log all output to a file
+  -l, --log=FILE            log all output to a file
       --nicehash            enable nicehash support
-      --print-time=N        print hashrate report every N seconds
-<<<<<<< HEAD
-      --api-port=N          port for the miner API
-      --api-access-token=T  access token for API
-      --api-worker-id=ID    custom worker-id for API
-  -h, --help                display this help and exit
-  -V, --version             output version information and exit
-```
-
-## Donations
-Default donation 5% (5 minutes in 100 minutes) can be reduced to 1% via command line option `--donate-level`.
-
-* XMR: `48edfHu7V9Z84YzzMa6fUueoELZ9ZRXq9VetWzYGzKt52XU5xvqgzYnDK9URnRoJMk1j8nLwEVsaSWJ4fhdUyZijBGUicoD`
-* BTC: `1P7ujsXeX7GxQwHNnJsRMgAdNkFZmNVqJT`
-
-## Contacts
-* support@xmrig.com
-* [reddit](https://www.reddit.com/user/XMRig/)
-=======
       --port=N              port for the miner API
-      --api-access-token=T  access token for API
+      --token=T             access token for API
       --id=ID               miner id (defaults to machine name)
   -h, --help                display this help and exit
   -v, --version             output version information and exit
 ```
 
-### Config file.
+### Config file
 Sample config for an array of Vega's:
-```json
+```js
 {
     "algo": "cryptonight",
-    "platform-index": 0,
     "intensity": 1932,
+    "platform_index": 0,
     "pools": [
         {
             "url": "pool.monero.hashvault.pro:5555",
@@ -136,7 +60,150 @@ Sample config for an array of Vega's:
     ],
     "api": {
         "port": 4444
+    },
+    "profile": {
+        "system": [
+            {"clock": 852,  "vddc": 0.9},
+            {"clock": 991,  "vddc": 0.9},
+            {"clock": 1084, "vddc": 0.9},
+            {"clock": 1138, "vddc": 0.9},
+            {"clock": 1150, "vddc": 0.9},
+            {"clock": 1202, "vddc": 0.9},
+            {"clock": 1350, "vddc": 0.8},
+            {"clock": 1350, "vddc": 0.8}
+        ],
+        "memory": [
+            {"clock": 167, "vddc": 0.8},
+            {"clock": 500, "vddc": 0.8},
+            {"clock": 700, "vddc": 0.9},
+            {"clock": 950, "vddc": 0.9}
+        ],
+        "target_temperature": 75,
+        "power_limit": 0
     }
 }
 ```
->>>>>>> initial commit
+Note: to change all P-states you need to have a soft powerplaytable for all cards in your registry.
+
+You can also configure the threads manually as usual:
+```js
+{
+    "algo": "cryptonight",
+    "platform_index": 0,
+    "pools": [
+        {
+            "url": "pool.monero.hashvault.pro:5555",
+            "user": "",
+            "pass": "x"
+        }
+    ],
+    "api": {
+        "port": 4444
+    },
+    "threads": [
+        {"index": 0, "intensity": 1932},
+        {"index": 0, "intensity": 1932}
+    ],
+    "profile": {
+        // ...
+    }
+}
+```
+
+### Rich API in JSON format
+
+Example output:
+```js
+{
+    "id": "DESKTOP-TEST",
+    "version": "Xrig/0.8.0 (Windows NT 10.0; Win64; x64) libuv/1.14.1 OpenCL/2.0 libmicrohttpd/0.9.58 msvc/2017",
+    "algo": "cryptonight",
+    "uptime": 14729.0,
+    "hashrate_10s": 11454.67,
+    "hashrate_60s": 11456.87,
+    "hashrate_15m": 11451.38,
+    "hashrate_max": 11482.48,
+    "gpus": [
+        {
+            "bus_id": 9,
+            "adapter_index": 23,
+            "device_name": "687F:C3",
+            "temperature": 74,
+            "core_clock": 1350,
+            "memory_clock": 950,
+            "fan_speed": 1934,
+            "profile": {
+                "system": [
+                    {"clock": 852,  "vddc": 0.9},
+                    {"clock": 991,  "vddc": 0.9},
+                    {"clock": 1084, "vddc": 0.9},
+                    {"clock": 1138, "vddc": 0.9},
+                    {"clock": 1150, "vddc": 0.9},
+                    {"clock": 1202, "vddc": 0.9},
+                    {"clock": 1350, "vddc": 0.8},
+                    {"clock": 1350, "vddc": 0.8}
+                ],
+                "memory": [
+                    {"clock": 167, "vddc": 0.8},
+                    {"clock": 500, "vddc": 0.8},
+                    {"clock": 700, "vddc": 0.9},
+                    {"clock": 950, "vddc": 0.9}
+                ],
+                "target_temperature": 75,
+                "power_limit": 0
+            },
+            "threads": [
+                {
+                    "intensity": 1928,
+                    "hashrate_10s": 951.86,
+                    "hashrate_60s": 951.31,
+                    "hashrate_15m": 949.24
+                },
+                {
+                    "intensity": 1928,
+                    "hashrate_10s": 951.39,
+                    "hashrate_60s": 952.29,
+                    "hashrate_15m": 951.5
+                }
+            ],
+            "hashrate_10s": 1903.25,
+            "hashrate_60s": 1903.6,
+            "hashrate_15m": 1900.74
+        },
+        {
+            // ...
+        },
+        {
+            // ...
+        },
+        {
+            // ...
+        },
+        {
+            // ...
+        },
+        {
+            // ...
+        }
+    ],
+    "results": {
+        "diff_current": 526795,
+        "shares_good": 308,
+        "shares_total": 321,
+        "avg_time": 48,
+        "hashes_total": 152108212,
+        "best": [
+            // ...
+        ],
+        "error_log": []
+    },
+    "connection": {
+        "pool": "cryptonight.eu.nicehash.com:3355",
+        "user": "******************************xR7M",
+        "uptime": 7056,
+        "ping": 84,
+        "failures": 2,
+        "error_log": []
+    }
+}
+```
