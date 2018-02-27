@@ -1,0 +1,296 @@
+#include <stdio.h>
+
+#include "adl/include/adl_sdk.h"
+#include "adl/include/adl_structures.h"
+
+#include <vector>
+#include <algorithm>
+
+#include "Adl.h"
+
+
+// Memory allocation function
+inline void* __stdcall ADL_Main_Memory_Alloc ( int iSize )
+{
+    void* lpBuffer = malloc ( iSize );
+    return lpBuffer;
+}
+
+// Optional Memory de-allocation function
+inline void __stdcall ADL_Main_Memory_Free ( void** lpBuffer )
+{
+    if ( NULL != *lpBuffer )
+    {
+        free ( *lpBuffer );
+        *lpBuffer = NULL;
+    }
+}
+
+
+Adl *Adl::m_self = nullptr;
+
+
+void Adl::start(const std::vector<int> busIds) {
+    m_self = new Adl(busIds);
+}
+
+
+Adl::Adl(const std::vector<int> busIds) {
+	context = NULL;
+	lpAdapterInfo = NULL;
+
+#ifdef _WIN32
+	// Load the ADL dll
+	hDLL = LoadLibrary(TEXT("atiadlxx.dll"));
+	if (hDLL == NULL)
+	{
+		// A 32 bit calling application on 64 bit OS will fail to LoadLibrary.
+		// Try to load the 32 bit library (atiadlxy.dll) instead
+		hDLL = LoadLibrary(TEXT("atiadlxy.dll"));
+	}
+	
+	if (NULL == hDLL)
+	{
+		printf("Failed to load ADL library\n");
+	}
+
+	ADL_Main_Control_Create = (ADL_MAIN_CONTROL_CREATE) GetProcAddress(hDLL,"ADL_Main_Control_Create");
+	ADL_Main_Control_Destroy = (ADL_MAIN_CONTROL_DESTROY) GetProcAddress(hDLL,"ADL_Main_Control_Destroy");
+	ADL_Adapter_NumberOfAdapters_Get = (ADL_ADAPTER_NUMBEROFADAPTERS_GET) GetProcAddress(hDLL,"ADL_Adapter_NumberOfAdapters_Get");
+	ADL_Adapter_AdapterInfo_Get = (ADL_ADAPTER_ADAPTERINFO_GET) GetProcAddress(hDLL,"ADL_Adapter_AdapterInfo_Get");
+	ADL_AdapterX2_Caps = (ADL_ADAPTERX2_CAPS) GetProcAddress( hDLL, "ADL_AdapterX2_Caps");
+	ADL2_Adapter_Active_Get = (ADL2_ADAPTER_ACTIVE_GET)GetProcAddress(hDLL, "ADL2_Adapter_Active_Get");
+	ADL2_OverdriveN_Capabilities_Get = (ADL2_OVERDRIVEN_CAPABILITIES_GET) GetProcAddress (hDLL, "ADL2_OverdriveN_Capabilities_Get");
+	ADL2_OverdriveN_CapabilitiesX2_Get = (ADL2_OVERDRIVEN_CAPABILITIESX2_GET)GetProcAddress(hDLL, "ADL2_OverdriveN_CapabilitiesX2_Get");
+	ADL2_OverdriveN_SystemClocks_Get = (ADL2_OVERDRIVEN_SYSTEMCLOCKS_GET) GetProcAddress (hDLL, "ADL2_OverdriveN_SystemClocks_Get");
+	ADL2_OverdriveN_SystemClocksX2_Get = (ADL2_OVERDRIVEN_SYSTEMCLOCKSX2_GET)GetProcAddress(hDLL, "ADL2_OverdriveN_SystemClocksX2_Get");
+	ADL2_OverdriveN_SystemClocks_Set = (ADL2_OVERDRIVEN_SYSTEMCLOCKS_SET) GetProcAddress (hDLL, "ADL2_OverdriveN_SystemClocks_Set");
+	ADL2_OverdriveN_SystemClocksX2_Set = (ADL2_OVERDRIVEN_SYSTEMCLOCKSX2_SET) GetProcAddress (hDLL, "ADL2_OverdriveN_SystemClocksX2_Set");
+	ADL2_OverdriveN_MemoryClocks_Get = (ADL2_OVERDRIVEN_MEMORYCLOCKS_GET) GetProcAddress (hDLL, "ADL2_OverdriveN_MemoryClocks_Get");
+	ADL2_OverdriveN_MemoryClocksX2_Get = (ADL2_OVERDRIVEN_MEMORYCLOCKSX2_GET)GetProcAddress(hDLL, "ADL2_OverdriveN_MemoryClocksX2_Get");
+	ADL2_OverdriveN_MemoryClocks_Set = (ADL2_OVERDRIVEN_MEMORYCLOCKS_SET) GetProcAddress (hDLL, "ADL2_OverdriveN_MemoryClocks_Set");
+	ADL2_OverdriveN_MemoryClocksX2_Set = (ADL2_OVERDRIVEN_MEMORYCLOCKSX2_SET) GetProcAddress (hDLL, "ADL2_OverdriveN_MemoryClocksX2_Set");
+	ADL2_OverdriveN_PerformanceStatus_Get = (ADL2_OVERDRIVEN_PERFORMANCESTATUS_GET) GetProcAddress (hDLL,"ADL2_OverdriveN_PerformanceStatus_Get");
+	ADL2_OverdriveN_FanControl_Get = (ADL2_OVERDRIVEN_FANCONTROL_GET) GetProcAddress (hDLL, "ADL2_OverdriveN_FanControl_Get");
+	ADL2_OverdriveN_FanControl_Set = (ADL2_OVERDRIVEN_FANCONTROL_SET) GetProcAddress (hDLL, "ADL2_OverdriveN_FanControl_Set");
+	ADL2_OverdriveN_PowerLimit_Get = (ADL2_OVERDRIVEN_POWERLIMIT_GET) GetProcAddress (hDLL, "ADL2_OverdriveN_PowerLimit_Get");
+	ADL2_OverdriveN_PowerLimit_Set = (ADL2_OVERDRIVEN_POWERLIMIT_SET) GetProcAddress (hDLL, "ADL2_OverdriveN_PowerLimit_Set");
+	ADL2_OverdriveN_Temperature_Get = (ADL2_OVERDRIVEN_TEMPERATURE_GET) GetProcAddress (hDLL, "ADL2_OverdriveN_Temperature_Get");
+	ADL2_Overdrive_Caps = (ADL2_OVERDRIVE_CAPS) GetProcAddress (hDLL, "ADL2_Overdrive_Caps");
+	if ( NULL == ADL_Main_Control_Create ||
+		 NULL == ADL_Main_Control_Destroy ||
+		 NULL == ADL_Adapter_NumberOfAdapters_Get||
+		 NULL == ADL_Adapter_AdapterInfo_Get ||
+		 NULL == ADL_AdapterX2_Caps ||
+		NULL == ADL2_Adapter_Active_Get ||
+		NULL == ADL2_OverdriveN_Capabilities_Get || 
+		NULL == ADL2_OverdriveN_CapabilitiesX2_Get || 
+		NULL == ADL2_OverdriveN_SystemClocks_Get ||
+		NULL == ADL2_OverdriveN_SystemClocksX2_Get ||
+		NULL == ADL2_OverdriveN_SystemClocks_Set ||
+		NULL == ADL2_OverdriveN_SystemClocksX2_Set ||
+		NULL == ADL2_OverdriveN_MemoryClocks_Get ||
+		NULL == ADL2_OverdriveN_MemoryClocksX2_Get ||
+		NULL == ADL2_OverdriveN_MemoryClocks_Set ||
+		NULL == ADL2_OverdriveN_MemoryClocksX2_Set ||
+		NULL == ADL2_OverdriveN_PerformanceStatus_Get ||
+		NULL == ADL2_OverdriveN_FanControl_Get ||
+		NULL == ADL2_OverdriveN_FanControl_Set ||
+		NULL == ADL2_Overdrive_Caps
+		)
+	{
+		printf("Failed to get ADL function pointers\n");
+	}
+
+	if (ADL_OK != ADL_Main_Control_Create(ADL_Main_Memory_Alloc, 1))
+	{
+		printf("ADL_Main_Control_Create failed\n");
+	}
+
+	int iNumberAdapters = 0;
+
+	// Obtain the number of adapters for the system
+	if (ADL_OK != ADL_Adapter_NumberOfAdapters_Get(&iNumberAdapters))
+	{
+		printf("ADL_Adapter_NumberOfAdapters_Get failed\n");
+	}
+	
+	if (0 < iNumberAdapters)
+	{
+		lpAdapterInfo = (LPAdapterInfo)malloc(sizeof (AdapterInfo)* iNumberAdapters);
+		memset(lpAdapterInfo, '\0', sizeof (AdapterInfo)* iNumberAdapters);
+
+		// Get the AdapterInfo structure for all adapters in the system
+		ADL_Adapter_AdapterInfo_Get(lpAdapterInfo, sizeof (AdapterInfo)* iNumberAdapters);
+	}
+
+	for (int i = 0; i < iNumberAdapters; i++) {
+		if (std::find(busIds.begin(), busIds.end(), lpAdapterInfo[i].iBusNumber) != busIds.end()) {
+	    	adapters[lpAdapterInfo[i].iBusNumber] = lpAdapterInfo[i].iAdapterIndex;
+		}
+	}
+
+	for (const auto& map : adapters) {
+    	int busId = map.first;
+    	int adapterIndex = map.second;
+
+		systemClocks[busId] = OverdriveN_SystemClocksX2_Get(adapterIndex);
+		memoryClocks[busId] = OverdriveN_MemoryClocksX2_Get(adapterIndex);
+		fanControl[busId] = OverdriveN_FanControl_Get(adapterIndex);
+		performanceStatus[busId] = OverdriveN_PerformanceStatus_Get(adapterIndex);
+		temperature[busId] = OverdriveN_Temperature_Get(adapterIndex);
+
+		// fix underclocking for vega cards
+		setSystemClock(adapterIndex, 7, systemClocks[busId]->aLevels[7].iClock, systemClocks[busId]->aLevels[7].iVddc + 1);
+		setSystemClock(adapterIndex, 7, systemClocks[busId]->aLevels[7].iClock, systemClocks[busId]->aLevels[7].iVddc);
+	}
+
+#endif // _WIN32
+}
+
+Adl::~Adl()
+{
+	ADL_Main_Memory_Free((void**)&lpAdapterInfo);
+
+	ADL_Main_Control_Destroy();
+	
+#ifdef _WIN32
+	FreeLibrary(hDLL);
+#endif // _WIN32
+}
+
+
+ADLODNPerformanceLevelsX2* Adl::OverdriveN_SystemClocksX2_Get(int adapterIndex) {
+	ADLODNPerformanceLevelsX2 *odNPerformanceLevels;
+
+	int size = sizeof(ADLODNPerformanceLevelsX2) + sizeof(ADLODNPerformanceLevelX2)* (ADL_PERFORMANCE_LEVELS - 1);
+	void* odNPerformanceLevelsBuffer = new char[size];
+	memset(odNPerformanceLevelsBuffer, 0, size);
+	odNPerformanceLevels = (ADLODNPerformanceLevelsX2*)odNPerformanceLevelsBuffer;
+	odNPerformanceLevels->iSize = size;
+	odNPerformanceLevels->iNumberOfPerformanceLevels = ADL_PERFORMANCE_LEVELS;
+
+	if (ADL_OK != ADL2_OverdriveN_SystemClocksX2_Get(context, adapterIndex, odNPerformanceLevels)) {
+		printf("ADL2_OverdriveN_SystemClocksX2_Get failed. adapterIndex: %d\n", adapterIndex);
+	}
+
+	return odNPerformanceLevels;
+}
+
+ADLODNPerformanceLevelsX2* Adl::OverdriveN_MemoryClocksX2_Get(int adapterIndex) {
+	ADLODNPerformanceLevelsX2 *odNPerformanceLevels;
+
+	int size = sizeof(ADLODNPerformanceLevelsX2) + sizeof(ADLODNPerformanceLevelX2)* (ADL_PERFORMANCE_LEVELS - 1);
+	void* odNPerformanceLevelsBuffer = new char[size];
+	memset(odNPerformanceLevelsBuffer, 0, size);
+	odNPerformanceLevels = (ADLODNPerformanceLevelsX2*)odNPerformanceLevelsBuffer;
+	odNPerformanceLevels->iSize = size;
+	odNPerformanceLevels->iNumberOfPerformanceLevels = ADL_PERFORMANCE_LEVELS;
+
+	if (ADL_OK != ADL2_OverdriveN_MemoryClocksX2_Get(context, adapterIndex, odNPerformanceLevels)) {
+		printf("ADL2_OverdriveN_MemoryClocksX2_Get failed. adapterIndex: %d\n", adapterIndex);
+	}
+
+	return odNPerformanceLevels;
+}
+
+ADLODNFanControl* Adl::OverdriveN_FanControl_Get(int adapterIndex) {
+	ADLODNFanControl *odNFanControl;
+	
+	int size = sizeof(ADLODNFanControl);
+	void* odNFanControlBuffer = new char[size];
+	memset(odNFanControlBuffer, 0, size);
+	odNFanControl = (ADLODNFanControl*)odNFanControlBuffer;
+
+	if (ADL_OK != ADL2_OverdriveN_FanControl_Get(context, adapterIndex, odNFanControl))
+	{
+		printf("ADL2_OverdriveN_FanControl_Get failed. adapterIndex: %d\n", adapterIndex);
+	}
+
+	return odNFanControl;
+}
+
+ADLODNPerformanceStatus* Adl::OverdriveN_PerformanceStatus_Get(int adapterIndex) {
+	ADLODNPerformanceStatus *odNPerformanceStatus;
+
+	int size = sizeof(ADLODNPerformanceStatus);
+	void* odNPerformanceStatusBuffer = new char[size];
+	memset(odNPerformanceStatusBuffer, 0, size);
+	odNPerformanceStatus = (ADLODNPerformanceStatus*)odNPerformanceStatusBuffer;
+
+	if (ADL_OK != ADL2_OverdriveN_PerformanceStatus_Get(context, adapterIndex, odNPerformanceStatus))
+	{
+		printf("ADL2_OverdriveN_PerformanceStatus_Get failed. adapterIndex: %d\n", adapterIndex);
+	}
+
+	return odNPerformanceStatus;
+}
+
+int Adl::OverdriveN_Temperature_Get(int adapterIndex) {
+	int temp = 0;
+
+	if (ADL_OK != ADL2_OverdriveN_Temperature_Get(context, adapterIndex, 1, &temp)) {
+		printf("ADL2_OverdriveN_Temperature_Get failed. adapterIndex: %d\n", adapterIndex);
+	}
+
+	return temp;
+}
+
+void Adl::setSystemClock(int adapterIndex, int level, int clock, int vddc) {
+	ADLODNPerformanceLevelsX2* odNPerformanceLevels = OverdriveN_SystemClocksX2_Get(adapterIndex);
+
+	if (level > ADL_PERFORMANCE_LEVELS || level < 0) {
+		printf("Invalid performance level");			
+	} else if (odNPerformanceLevels->aLevels[level].iEnabled == 0) {
+		printf("Performance level (%d) is disabled\n", level);			
+	} else {
+		odNPerformanceLevels->aLevels[level].iClock = clock;
+		odNPerformanceLevels->aLevels[level].iVddc = vddc;
+		odNPerformanceLevels->iMode = ADLODNControlType::ODNControlType_Manual;
+
+		if (ADL_OK != ADL2_OverdriveN_SystemClocksX2_Set(context, adapterIndex, odNPerformanceLevels)) {
+			printf("ADL2_OverdriveN_SystemClocksX2_Set failed. adapterIndex: %d\n", adapterIndex);
+		}
+	}
+}
+
+void Adl::setMemoryClock(int adapterIndex, int level, int clock, int vddc) {
+	ADLODNPerformanceLevelsX2* odNPerformanceLevels = OverdriveN_MemoryClocksX2_Get(adapterIndex);
+
+	if (level > ADL_PERFORMANCE_LEVELS || level < 0) {
+		printf("Invalid performance level");			
+	} else if (odNPerformanceLevels->aLevels[level].iEnabled == 0) {
+		printf("Performance level (%d) is disabled\n", level);			
+	} else {
+		odNPerformanceLevels->aLevels[level].iClock = clock;
+		odNPerformanceLevels->aLevels[level].iVddc = vddc;
+		odNPerformanceLevels->iMode = ADLODNControlType::ODNControlType_Manual;
+
+		if (ADL_OK != ADL2_OverdriveN_MemoryClocksX2_Set(context, adapterIndex, odNPerformanceLevels)) {
+			printf("ADL2_OverdriveN_MemoryClocksX2_Set failed. adapterIndex: %d\n", adapterIndex);
+		}
+	}
+}
+
+void Adl::setFanControl(int adapterIndex, int targetTemp) {
+	ADLODNFanControl* odNFanControl = OverdriveN_FanControl_Get(adapterIndex);
+
+	odNFanControl->iTargetTemperature = targetTemp;
+	odNFanControl->iMode = ADLODNControlType::ODNControlType_Manual;
+
+	if (ADL_OK != ADL2_OverdriveN_FanControl_Set(context, adapterIndex, odNFanControl)) {
+		printf("ADL2_OverdriveN_FanControl_Set failed\n");
+	}
+}
+
+void Adl::tick() {
+	for (const auto& map : adapters) {
+    	int busId = map.first;
+    	int adapterIndex = map.second;
+
+		fanControl[busId] = OverdriveN_FanControl_Get(adapterIndex);
+		performanceStatus[busId] = OverdriveN_PerformanceStatus_Get(adapterIndex);
+		temperature[busId] = OverdriveN_Temperature_Get(adapterIndex);
+	}
+}
+
