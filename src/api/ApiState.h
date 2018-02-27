@@ -26,6 +26,8 @@
 
 
 #include <vector>
+#include <chrono>
+#include <time.h>
 
 
 #include "api/NetworkState.h"
@@ -48,21 +50,20 @@ public:
 
 private:
     char *finalize(rapidjson::Document &doc) const;
-    void genId();
     void getConnection(rapidjson::Document &doc) const;
+    void getGpus(rapidjson::Document &doc) const;
     void getHashrate(rapidjson::Document &doc) const;
-    void getIdentify(rapidjson::Document &doc) const;
+    void getId(rapidjson::Document &doc) const;
     void getMiner(rapidjson::Document &doc) const;
     void getResults(rapidjson::Document &doc) const;
 
-    char m_id[17];
-    char m_workerId[128];
+    char m_id[128];
     double *m_hashrate;
     double m_highestHashrate;
     double m_totalHashrate[3];
+    time_t m_start;
     int m_threads;
     NetworkState m_network;
-    std::vector<OclThread> m_gpuThreads;
 };
 
 #endif /* __APISTATE_H__ */

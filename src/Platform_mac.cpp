@@ -36,33 +36,56 @@
 #   include "nvidia/cryptonight.h"
 #endif
 
+#ifndef XMRIG_NO_HTTPD
+#   include <microhttpd.h>
+#endif
 
-static inline char *createUserAgent()
+#include <OpenCL/cl.h>
+
+#if CL_VERSION_2_0
+#    define CL_VERSION_STRING "2.0"
+#elif CL_VERSION_1_2
+#    define CL_VERSION_STRING "1.2"
+#elif CL_VERSION_1_1
+#    define CL_VERSION_STRING "1.1"
+#elif CL_VERSION_1_0
+#    define CL_VERSION_STRING "1.0"
+#endif
+
+
+
+static inline char *createVersionString()
 {
     const size_t max = 160;
 
     char *buf = new char[max];
+    int length = snprintf(buf, max, "%s/%s (Macintosh; Intel Mac OS X) libuv/%s OpenCL/%s", APP_NAME, APP_VERSION, uv_version_string(), CL_VERSION_STRING);
+
+#   ifndef XMRIG_NO_HTTPD
+    length += snprintf(buf + length, max - length, " libmicrohttpd/%s", MHD_get_version());
+#   endif
 
 #   ifdef XMRIG_NVIDIA_PROJECT
     const int cudaVersion = cuda_get_runtime_version();
-    snprintf(buf, max, "%s/%s (Macintosh; Intel Mac OS X) libuv/%s CUDA/%d.%d clang/%d.%d.%d", APP_NAME, APP_VERSION, uv_version_string(), cudaVersion / 1000, cudaVersion % 100, __clang_major__, __clang_minor__, __clang_patchlevel__);
-#   else
-    snprintf(buf, max, "%s/%s (Macintosh; Intel Mac OS X) libuv/%s clang/%d.%d.%d", APP_NAME, APP_VERSION, uv_version_string(), __clang_major__, __clang_minor__, __clang_patchlevel__);
+    length += snprintf(buf + length, max - length, " CUDA/%d.%d", cudaVersion / 1000, cudaVersion % 100);
 #   endif
+
+    length += snprintf(buf + length, max - length, " clang/%d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
 
     return buf;
 }
 
 
-void Platform::init(const char *userAgent)
+void Platform::init()
 {
-    m_userAgent = userAgent ? strdup(userAgent) : createUserAgent();
+    m_versionString = createVersionString();
 }
 
 
 void Platform::release()
 {
-    delete [] m_userAgent;
+    delete [] m_defaultConfig;
+    delete [] m_versionString;
 }
 
 
@@ -115,4 +138,3 @@ void Platform::setThreadPriority(int priority)
 
     setpriority(PRIO_PROCESS, 0, prio);
 }
-

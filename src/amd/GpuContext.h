@@ -51,13 +51,15 @@ struct GpuContext
         Kernels{ nullptr },
         freeMem(0),
         computeUnits(0),
+        threadId(0),
+        busId(0),
         Nonce(0)
     {}
 
 
-    inline GpuContext(size_t index, size_t intensity, size_t worksize) :
+    inline GpuContext(size_t index, size_t rawIntensity, size_t worksize) :
         deviceIdx(index),
-        rawIntensity(intensity),
+        rawIntensity(rawIntensity),
         workSize(worksize),
         DeviceID(nullptr),
         CommandQueues(nullptr),
@@ -68,6 +70,8 @@ struct GpuContext
         Kernels{ nullptr },
         freeMem(0),
         computeUnits(0),
+        threadId(0),
+        busId(0),
         Nonce(0)
     {}
 
@@ -86,7 +90,9 @@ struct GpuContext
     cl_kernel Kernels[7];
     size_t freeMem;
     int computeUnits;
-    std::string name;
+    int threadId;
+    int busId;
+    std::string deviceName;
 
     uint32_t Nonce;
 };

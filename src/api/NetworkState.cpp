@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <string.h>
+#include <string>
 #include <uv.h>
 
 
@@ -39,6 +40,7 @@ NetworkState::NetworkState() :
     total(0),
     m_active(false)
 {
+    memset(userMask, 0, sizeof(userMask));
     memset(pool, 0, sizeof(pool));
 }
 
@@ -90,6 +92,12 @@ void NetworkState::add(const SubmitResult &result, const char *error)
     }
 
     m_latency.push_back(result.elapsed > 0xFFFF ? 0xFFFF : (uint16_t) result.elapsed);
+}
+
+
+void NetworkState::setUserMask(const char *user)
+{
+    snprintf(userMask, sizeof(userMask) - 1, "%s%s", std::string(strlen(user) - 4, '*').c_str(), std::string(user).substr(strlen(user) - 4).c_str());
 }
 
 

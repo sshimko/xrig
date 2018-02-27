@@ -39,7 +39,6 @@
 
 
 uint32_t getNumPlatforms();
-void printPlatforms();
 int getAMDPlatformIdx();
 std::vector<GpuContext> getAMDDevices(int index);
 

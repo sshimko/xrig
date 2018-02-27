@@ -35,6 +35,7 @@ Handle::Handle(int threadId, OclThread *thread, GpuContext *ctx, int threads, bo
     m_worker(nullptr)
 {
     thread->setThreadId(threadId);
+	ctx->threadId = threadId;
 }
 
 

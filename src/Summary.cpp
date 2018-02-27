@@ -23,54 +23,20 @@
 
 
 #include <inttypes.h>
-#include <uv.h>
-
-
-#if defined(__APPLE__)
-#   include <OpenCL/cl.h>
-#else
-#   include <CL/cl.h>
-#endif
-
 
 #include "Cpu.h"
 #include "log/Log.h"
 #include "net/Url.h"
 #include "Options.h"
 #include "Summary.h"
-#include "version.h"
+#include "Platform.h"
 #include "workers/OclThread.h"
 
 
-static void print_versions()
+static void print_version()
 {
-    char buf[16];
-
-#   if defined(__clang__)
-    snprintf(buf, 16, " clang/%d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
-#   elif defined(__GNUC__)
-    snprintf(buf, 16, " gcc/%d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
-#   elif defined(_MSC_VER)
-    snprintf(buf, 16, " MSVC/%d", MSVC_VERSION);
-#   else
-    buf[0] = '\0';
-#   endif
-
-
-#   if CL_VERSION_2_0
-    const char *ocl = "2.0";
-#   elif CL_VERSION_1_2
-    const char *ocl = "1.2";
-#   elif CL_VERSION_1_1
-    const char *ocl = "1.1";
-#   elif CL_VERSION_1_0
-    const char *ocl = "1.0";
-#   else
-    const char *ocl = "0.0";
-#   endif
-
-    Log::i()->text(Options::i()->colors() ? "\x1B[01;32m * \x1B[01;37mVERSIONS:     \x1B[01;36mXMRig/%s\x1B[01;37m libuv/%s OpenCL/%s%s" : " * VERSIONS:     XMRig/%s libuv/%s OpenCL/%s%s",
-                   APP_VERSION, uv_version_string(), ocl, buf);
+    Log::i()->text(Options::i()->colors() ? "\x1B[01;32m * \x1B[01;37mVERSION:      %s" : " * VERSION:      %s",
+                   Platform::versionString());
 }
 
 
@@ -90,10 +56,8 @@ static void print_cpu()
 
 static void print_algo()
 {
-    Log::i()->text(Options::i()->colors() ? "\x1B[01;32m * \x1B[01;37mALGO:         %s, %sdonate=%d%%" : " * ALGO:         %s, %sdonate=%d%%",
-                   Options::i()->algoName(),
-                   Options::i()->colors() && Options::i()->donateLevel() == 0 ? "\x1B[01;31m" : "",
-                   Options::i()->donateLevel()
+    Log::i()->text(Options::i()->colors() ? "\x1B[01;32m * \x1B[01;37mALGO:         %s" : " * ALGO:         %s",
+                   Options::i()->algoName()
     );
 }
 
@@ -120,11 +84,11 @@ static void print_pools()
 #ifndef XMRIG_NO_API
 static void print_api()
 {
-    if (Options::i()->apiPort() == 0) {
+    if (Options::i()->port() == 0) {
         return;
     }
 
-    Log::i()->text(Options::i()->colors() ? "\x1B[01;32m * \x1B[01;37mAPI PORT:     \x1B[01;36m%d" : " * API PORT:     %d", Options::i()->apiPort());
+    Log::i()->text(Options::i()->colors() ? "\x1B[01;32m * \x1B[01;37mAPI PORT:     \x1B[01;36m%d" : " * API PORT:     %d", Options::i()->port());
 }
 #endif
 
@@ -142,7 +106,7 @@ static void print_commands()
 
 void Summary::print()
 {
-    print_versions();
+    print_version();
     print_cpu();
     print_algo();
     print_pools();
@@ -153,6 +117,5 @@ void Summary::print()
 
     print_commands();
 }
-
 
 

@@ -30,7 +30,7 @@
 #include <vector>
 
 
-#include "net/Id.h"
+#include "net/JobId.h"
 #include "net/Job.h"
 #include "net/SubmitResult.h"
 #include "net/Url.h"
@@ -125,7 +125,7 @@ private:
     uv_getaddrinfo_t m_resolver;
     uv_stream_t *m_stream;
     uv_tcp_t *m_socket;
-    xmrig::Id m_rpcId;
+    JobId m_rpcId;
 
 #   ifndef XMRIG_PROXY_PROJECT
     uv_timer_t m_keepAliveTimer;

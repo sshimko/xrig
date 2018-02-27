@@ -29,6 +29,7 @@
 #include <list>
 #include <uv.h>
 #include <vector>
+#include <map>
 
 #include "net/Job.h"
 #include "net/JobResult.h"
@@ -57,6 +58,10 @@ public:
     static inline void pause()                                   { m_active = false; m_paused = 1; m_sequence++; }
     static inline void setListener(IJobResultListener *listener) { m_listener = listener; }
 
+    static const std::vector<Handle*> &handles()                 { return m_handles; }
+    static const std::map<int, std::vector<Handle*>> &gpus()     { return m_gpus; }
+
+
 private:
     static void onReady(void *arg);
     static void onResult(uv_async_t *handle);
@@ -71,7 +76,8 @@ private:
     static std::atomic<int> m_paused;
     static std::atomic<uint64_t> m_sequence;
     static std::list<Job> m_queue;
-    static std::vector<Handle*> m_workers;
+    static std::vector<Handle*> m_handles;
+    static std::map<int, std::vector<Handle*>> m_gpus;
     static uint64_t m_ticks;
     static uv_async_t m_async;
     static uv_mutex_t m_mutex;

@@ -34,6 +34,37 @@
 #   include "nvidia/cryptonight.h"
 #endif
 
+#ifndef XMRIG_NO_HTTPD
+#   include <microhttpd.h>
+#endif
+
+#include <CL/cl.h>
+
+#if CL_VERSION_2_0
+#    define CL_VERSION_STRING "2.0"
+#elif CL_VERSION_1_2
+#    define CL_VERSION_STRING "1.2"
+#elif CL_VERSION_1_1
+#    define CL_VERSION_STRING "1.1"
+#elif CL_VERSION_1_0
+#    define CL_VERSION_STRING "1.0"
+#endif
+
+#ifdef _MSC_VER
+#   if (_MSC_VER >= 1910)
+#       define MSVC_VERSION 2017
+#   elif _MSC_VER == 1900
+#       define MSVC_VERSION 2015
+#   elif _MSC_VER == 1800
+#       define MSVC_VERSION 2013
+#   elif _MSC_VER == 1700
+#       define MSVC_VERSION 2012
+#   elif _MSC_VER == 1600
+#       define MSVC_VERSION 2010
+#   else
+#       define MSVC_VERSION 0
+#   endif
+#endif
 
 static inline OSVERSIONINFOEX winOsVersion()
 {
@@ -53,7 +84,7 @@ static inline OSVERSIONINFOEX winOsVersion()
 }
 
 
-static inline char *createUserAgent()
+static inline char *createVersionString()
 {
     const auto osver = winOsVersion();
     const size_t max = 160;
@@ -62,9 +93,13 @@ static inline char *createUserAgent()
     int length = snprintf(buf, max, "%s/%s (Windows NT %lu.%lu", APP_NAME, APP_VERSION, osver.dwMajorVersion, osver.dwMinorVersion);
 
 #   if defined(__x86_64__) || defined(_M_AMD64)
-    length += snprintf(buf + length, max - length, "; Win64; x64) libuv/%s", uv_version_string());
+    length += snprintf(buf + length, max - length, "; Win64; x64) libuv/%s OpenCL/%s", uv_version_string(), CL_VERSION_STRING);
 #   else
-    length += snprintf(buf + length, max - length, ") libuv/%s", uv_version_string());
+    length += snprintf(buf + length, max - length, ") libuv/%s OpenCL/%s", uv_version_string(), CL_VERSION_STRING);
+#   endif
+
+#   ifndef XMRIG_NO_HTTPD
+    length += snprintf(buf + length, max - length, " libmicrohttpd/%s", MHD_get_version());
 #   endif
 
 #   ifdef XMRIG_NVIDIA_PROJECT
@@ -82,16 +117,16 @@ static inline char *createUserAgent()
 }
 
 
-void Platform::init(const char *userAgent)
+void Platform::init()
 {
-    m_userAgent = userAgent ? strdup(userAgent) : createUserAgent();
+    m_versionString = createVersionString();
 }
 
 
 void Platform::release()
 {
-    delete [] m_defaultConfigName;
-    delete [] m_userAgent;
+    delete [] m_defaultConfig;
+    delete [] m_versionString;
 }
 
 
@@ -172,4 +207,3 @@ void Platform::setThreadPriority(int priority)
 
     SetThreadPriority(GetCurrentThread(), prio);
 }
-

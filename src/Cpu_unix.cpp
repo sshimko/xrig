@@ -75,5 +75,6 @@ void Cpu::setAffinity(int id, uint64_t mask)
 #       else
         sched_setaffinity(gettid(), sizeof(&set), &set);
 #       endif
+        sched_setaffinity(0, sizeof(&set), &set);
     }
 }

@@ -46,13 +46,28 @@
 #   include "nvidia/cryptonight.h"
 #endif
 
+#ifndef XMRIG_NO_HTTPD
+#   include <microhttpd.h>
+#endif
+
+#include <CL/cl.h>
+
+#if CL_VERSION_2_0
+#    define CL_VERSION_STRING "2.0"
+#elif CL_VERSION_1_2
+#    define CL_VERSION_STRING "1.2"
+#elif CL_VERSION_1_1
+#    define CL_VERSION_STRING "1.1"
+#elif CL_VERSION_1_0
+#    define CL_VERSION_STRING "1.0"
+#endif
 
 #ifdef __FreeBSD__
 typedef cpuset_t cpu_set_t;
 #endif
 
 
-static inline char *createUserAgent()
+static inline char *createVersionString()
 {
     const size_t max = 160;
 
@@ -60,9 +75,13 @@ static inline char *createUserAgent()
     int length = snprintf(buf, max, "%s/%s (Linux ", APP_NAME, APP_VERSION);
 
 #   if defined(__x86_64__)
-    length += snprintf(buf + length, max - length, "x86_64) libuv/%s", uv_version_string());
+    length += snprintf(buf + length, max - length, "x86_64) libuv/%s OpenCL/%s", uv_version_string(), CL_VERSION_STRING);
 #   else
-    length += snprintf(buf + length, max - length, "i686) libuv/%s", uv_version_string());
+    length += snprintf(buf + length, max - length, "i686) libuv/%s OpenCL/%s", uv_version_string(), CL_VERSION_STRING);
+#   endif
+
+#   ifndef XMRIG_NO_HTTPD
+    length += snprintf(buf + length, max - length, " libmicrohttpd/%s", MHD_get_version());
 #   endif
 
 #   ifdef XMRIG_NVIDIA_PROJECT
@@ -78,15 +97,16 @@ static inline char *createUserAgent()
 }
 
 
-void Platform::init(const char *userAgent)
+void Platform::init()
 {
-    m_userAgent = userAgent ? strdup(userAgent) : createUserAgent();
+    m_versionString = createVersionString();
 }
 
 
 void Platform::release()
 {
-    delete [] m_userAgent;
+    delete [] m_defaultConfig;
+    delete [] m_versionString;
 }
 
 

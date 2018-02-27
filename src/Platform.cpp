@@ -29,32 +29,32 @@
 #include "Platform.h"
 
 
-char *Platform::m_defaultConfigName = nullptr;
-char *Platform::m_userAgent         = nullptr;
+char *Platform::m_defaultConfig = nullptr;
+char *Platform::m_versionString     = nullptr;
 
 
-const char *Platform::defaultConfigName()
+const char *Platform::defaultConfig()
 {
     size_t size = 520;
 
-    if (m_defaultConfigName == nullptr) {
-        m_defaultConfigName = new char[size];
+    if (m_defaultConfig == nullptr) {
+        m_defaultConfig = new char[size];
     }
 
-    if (uv_exepath(m_defaultConfigName, &size) < 0) {
+    if (uv_exepath(m_defaultConfig, &size) < 0) {
         return nullptr;
     }
 
     if (size < 500) {
 #       ifdef WIN32
-        char *p = strrchr(m_defaultConfigName, '\\');
+        char *p = strrchr(m_defaultConfig, '\\');
 #       else
-        char *p = strrchr(m_defaultConfigName, '/');
+        char *p = strrchr(m_defaultConfig, '/');
 #       endif
 
         if (p) {
             strcpy(p + 1, "config.json");
-            return m_defaultConfigName;
+            return m_defaultConfig;
         }
     }
 

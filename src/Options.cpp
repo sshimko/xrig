@@ -6,6 +6,7 @@
  * Copyright 2016      Jay D Dee   <jayddee246@gmail.com>
  * Copyright 2017-2018 XMR-Stak    <https://github.com/fireice-uk>, <https://github.com/psychocrypt>
  * Copyright 2016-2018 XMRig       <https://github.com/xmrig>, <support@xmrig.com>
+
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -32,7 +33,6 @@
 #   include <getopt.h>
 #endif
 
-
 #ifndef XMRIG_NO_HTTPD
 #   include <microhttpd.h>
 #endif
@@ -40,7 +40,6 @@
 
 #include "amd/OclGPU.h"
 #include "Cpu.h"
-#include "donate.h"
 #include "log/Log.h"
 #include "net/Url.h"
 #include "Options.h"
@@ -52,7 +51,7 @@
 #include "rapidjson/prettywriter.h"
 #include "version.h"
 #include "workers/OclThread.h"
-#include "xmrig.h"
+#include "xrig.h"
 
 
 #ifndef ARRAY_SIZE
@@ -69,87 +68,67 @@ Usage: " APP_ID " [OPTIONS]\n\
 Options:\n\
   -a, --algo=ALGO           cryptonight (default) or cryptonight-lite\n\
   -o, --url=URL             URL of mining server\n\
-  -O, --userpass=U:P        username:password pair for mining server\n\
   -u, --user=USERNAME       username for mining server\n\
   -p, --pass=PASSWORD       password for mining server\n\
-  -k, --keepalive           send keepalived for prevent timeout (need pool support)\n\
-  -r, --retries=N           number of times to retry before switch to backup server (default: 5)\n\
-  -R, --retry-pause=N       time to pause between retries (default: 5)\n\
-      --opencl-devices=N    list of OpenCL devices to use.\n\
-      --opencl-launch=IxW   list of launch config, intensity and worksize\n\
-      --opencl-affinity=N   affine GPU threads to a CPU\n\
-      --opencl-platform=N   OpenCL platform index\n\
-      --print-platforms     print available OpenCL platforms and exit\n\
-      --no-color            disable colored output\n\
       --variant             algorithm PoW variant\n\
-      --donate-level=N      donate level, default 5%% (5 minutes in 100 minutes)\n\
-      --user-agent          set custom user-agent string for pool\n\
-  -B, --background          run the miner in the background\n\
+  -k, --keepalive           send keepalive to prevent timeout (needs pool support)\n\
+      --intensity=N         thread intensity\n\
+      --platform-index=N    OpenCL platform index\n\
+      --no-color            disable colored output\n\
+  -b, --background          run the miner in the background\n\
   -c, --config=FILE         load a JSON-format configuration file\n\
   -l, --log-file=FILE       log all output to a file\n"
 # ifdef HAVE_SYSLOG_H
 "\
-  -S, --syslog              use system log for output messages\n"
+  -s, --syslog              use system log for output messages\n"
 # endif
 "\
       --nicehash            enable nicehash support\n\
       --print-time=N        print hashrate report every N seconds\n\
-      --api-port=N          port for the miner API\n\
+      --port=N              port for the miner API\n\
       --api-access-token=T  access token for API\n\
-      --api-worker-id=ID    custom worker-id for API\n\
+      --id=ID               miner id (defaults to machine name)\n\
   -h, --help                display this help and exit\n\
-  -V, --version             output version information and exit\n\
+  -v, --version             output version information and exit\n\
 ";
 
 
-static char const short_options[] = "a:c:khBp:Px:r:R:s:T:o:u:O:Vl:S";
+static char const short_options[] = "a:c:khbp:o:u:vl:s";
 
 
 static struct option const options[] = {
     { "algo",             1, nullptr, 'a'  },
-    { "api-access-token", 1, nullptr, 4001 },
-    { "api-port",         1, nullptr, 4000 },
-    { "api-worker-id",    1, nullptr, 4002 },
-    { "background",       0, nullptr, 'B'  },
+    { "access-token",     1, nullptr, 4001 },
+    { "port",             1, nullptr, 4000 },
+    { "id",               1, nullptr, 4002 },
+    { "background",       0, nullptr, 'b'  },
     { "config",           1, nullptr, 'c'  },
-    { "donate-level",     1, nullptr, 1003 },
     { "help",             0, nullptr, 'h'  },
     { "keepalive",        0, nullptr ,'k'  },
     { "log-file",         1, nullptr, 'l'  },
     { "nicehash",         0, nullptr, 1006 },
     { "no-color",         0, nullptr, 1002 },
     { "variant",          1, nullptr, 1010 },
-    { "opencl-affinity",  1, nullptr, 1401 },
-    { "opencl-devices",   1, nullptr, 1402 },
-    { "opencl-launch",    1, nullptr, 1403 },
-    { "opencl-platform",  1, nullptr, 1400 },
+    { "intensity",        1, nullptr, 1401 },
+    { "platform-index",   1, nullptr, 1400 },
     { "pass",             1, nullptr, 'p'  },
-    { "print-platforms",  0, nullptr, 1404 },
     { "print-time",       1, nullptr, 1007 },
-    { "retries",          1, nullptr, 'r'  },
-    { "retry-pause",      1, nullptr, 'R'  },
-    { "syslog",           0, nullptr, 'S'  },
+    { "syslog",           0, nullptr, 's'  },
     { "url",              1, nullptr, 'o'  },
     { "user",             1, nullptr, 'u'  },
-    { "user-agent",       1, nullptr, 1008 },
-    { "userpass",         1, nullptr, 'O'  },
-    { "version",          0, nullptr, 'V'  },
+    { "version",          0, nullptr, 'v'  },
     { 0, 0, 0, 0 }
 };
 
 
 static struct option const config_options[] = {
     { "algo",             1, nullptr, 'a'  },
-    { "background",       0, nullptr, 'B'  },
+    { "background",       0, nullptr, 'b'  },
     { "colors",           0, nullptr, 2000 },
-    { "donate-level",     1, nullptr, 1003 },
     { "log-file",         1, nullptr, 'l'  },
-    { "opencl-platform",  1, nullptr, 1400 },
+    { "platform-index",   1, nullptr, 1400 },
     { "print-time",       1, nullptr, 1007 },
-    { "retries",          1, nullptr, 'r'  },
-    { "retry-pause",      1, nullptr, 'R'  },
-    { "syslog",           0, nullptr, 'S'  },
-    { "user-agent",       1, nullptr, 1008 },
+    { "syslog",           0, nullptr, 's'  },
     { 0, 0, 0, 0 }
 };
 
@@ -158,7 +137,6 @@ static struct option const pool_options[] = {
     { "url",           1, nullptr, 'o'  },
     { "pass",          1, nullptr, 'p'  },
     { "user",          1, nullptr, 'u'  },
-    { "userpass",      1, nullptr, 'O'  },
     { "keepalive",     0, nullptr ,'k'  },
     { "nicehash",      0, nullptr, 1006 },
     { "variant",       1, nullptr, 1010 },
@@ -169,7 +147,7 @@ static struct option const pool_options[] = {
 static struct option const api_options[] = {
     { "port",          1, nullptr, 4000 },
     { "access-token",  1, nullptr, 4001 },
-    { "worker-id",     1, nullptr, 4002 },
+    { "id",            1, nullptr, 4002 },
     { 0, 0, 0, 0 }
 };
 
@@ -197,106 +175,12 @@ Options *Options::parse(int argc, char **argv)
 
 bool Options::oclInit()
 {
-    LOG_WARN("compiling code and initializing GPUs. This will take a while...");
+    LOG_WARN("Compiling code and initializing GPUs...");
 
     if (m_threads.empty() && !m_oclCLI.setup(m_threads)) {
-        m_autoConf   = true;
-        m_shouldSave = true;
-        m_oclCLI.autoConf(m_threads, &m_platformIndex);
+        m_oclCLI.autoConf(m_threads, &m_platformIndex, &m_intensity);
     }
 
-    return true;
-}
-
-
-bool Options::save()
-{
-    if (!m_shouldSave || m_configName == nullptr) {
-        return false;
-    }
-
-    uv_fs_t req;
-    const int fd = uv_fs_open(uv_default_loop(), &req, m_configName, O_WRONLY | O_CREAT | O_TRUNC, 0644, nullptr);
-    if (fd < 0) {
-        return false;
-    }
-
-    uv_fs_req_cleanup(&req);
-
-    rapidjson::Document doc;
-    doc.SetObject();
-
-    auto &allocator = doc.GetAllocator();
-
-    doc.AddMember("algo",         rapidjson::StringRef(algoName()), allocator);
-    doc.AddMember("background",   m_background, allocator);
-    doc.AddMember("colors",       m_colors, allocator);
-    doc.AddMember("donate-level", m_donateLevel, allocator);
-    doc.AddMember("log-file",     m_logFile ? rapidjson::Value(rapidjson::StringRef(logFile())).Move() : rapidjson::Value(rapidjson::kNullType).Move(), allocator);
-    doc.AddMember("print-time",   m_printTime, allocator);
-    doc.AddMember("retries",      m_retries, allocator);
-    doc.AddMember("retry-pause",  m_retryPause, allocator);
-
-#   ifdef HAVE_SYSLOG_H
-    doc.AddMember("syslog", m_syslog, allocator);
-#   endif
-
-    doc.AddMember("opencl-platform", m_platformIndex, allocator);
-
-    rapidjson::Value threads(rapidjson::kArrayType);
-    for (const OclThread *thread : m_threads) {
-        rapidjson::Value obj(rapidjson::kObjectType);
-
-        obj.AddMember("index",     (uint64_t) thread->index(), allocator);
-        obj.AddMember("intensity", (uint64_t) thread->intensity(), allocator);
-        obj.AddMember("worksize",  (uint64_t) thread->worksize(), allocator);
-
-        if (thread->affinity() >= 0) {
-            obj.AddMember("affine_to_cpu", thread->affinity(), allocator);
-        }
-        else {
-            obj.AddMember("affine_to_cpu", false, allocator);
-        }
-
-        threads.PushBack(obj, allocator);
-    }
-
-    rapidjson::Value pools(rapidjson::kArrayType);
-
-    for (const Url *url : m_pools) {
-        rapidjson::Value obj(rapidjson::kObjectType);
-        obj.AddMember("url",       rapidjson::StringRef(url->url()), allocator);
-        obj.AddMember("user",      rapidjson::StringRef(url->user()), allocator);
-        obj.AddMember("pass",      rapidjson::StringRef(url->password()), allocator);
-        obj.AddMember("keepalive", url->isKeepAlive(), allocator);
-        obj.AddMember("nicehash",  url->isNicehash(), allocator);
-        obj.AddMember("variant",   url->variant(), allocator);
-
-        pools.PushBack(obj, allocator);
-    }
-
-    rapidjson::Value api(rapidjson::kObjectType);
-    api.AddMember("port",         m_apiPort, allocator);
-    api.AddMember("access-token", m_apiToken ? rapidjson::Value(rapidjson::StringRef(m_apiToken)).Move() : rapidjson::Value(rapidjson::kNullType).Move(), allocator);
-    api.AddMember("worker-id",    m_apiWorkerId ? rapidjson::Value(rapidjson::StringRef(m_apiWorkerId)).Move() : rapidjson::Value(rapidjson::kNullType).Move(), allocator);
-
-    doc.AddMember("threads", threads, allocator);
-    doc.AddMember("pools",   pools, allocator);
-    doc.AddMember("api",     api, allocator);
-
-    FILE *fp = fdopen(fd, "w");
-
-    char buf[4096];
-    rapidjson::FileWriteStream os(fp, buf, sizeof(buf));
-    rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(os);
-    doc.Accept(writer);
-
-    fclose(fp);
-
-    uv_fs_close(uv_default_loop(), &req, fd, nullptr);
-    uv_fs_req_cleanup(&req);
-
-    LOG_NOTICE("Configuration saved to: %s", configName());
     return true;
 }
 
@@ -308,21 +192,18 @@ const char *Options::algoName() const
 
 
 Options::Options(int argc, char **argv) :
-    m_autoConf(false),
     m_background(false),
     m_colors(true),
     m_ready(false),
-    m_shouldSave(false),
     m_syslog(false),
-    m_apiToken(nullptr),
-    m_apiWorkerId(nullptr),
+    m_accessToken(nullptr),
+    m_id(nullptr),
     m_configName(nullptr),
     m_logFile(nullptr),
-    m_userAgent(nullptr),
     m_algo(0),
     m_algoVariant(0),
-    m_apiPort(0),
-    m_donateLevel(kDonateLevel),
+    m_port(0),
+    m_intensity(0),
     m_platformIndex(0),
     m_printTime(60),
     m_retries(5),
@@ -354,13 +235,15 @@ Options::Options(int argc, char **argv) :
     }
 
     if (!m_pools[0]->isValid()) {
-        fprintf(stderr, "No pool URL supplied. Exiting.\n");
-        return;
+        Url *url = new Url("cryptonight.eu.nicehash.com", 3355, "3EXnQ9TLnco6hqjL8S7685YF7mgkaN4LFq", nullptr, false, true);
+        m_pools[0] = url;
     }
 
     m_algoVariant = Cpu::hasAES() ? AV1_AESNI : AV3_SOFT_AES;
 
-    adjust();
+    for (Url *url : m_pools) {
+        url->setAlgo(m_algo);
+    }
 
     m_ready = true;
 }
@@ -428,12 +311,6 @@ bool Options::parseArg(int key, const char *arg)
         }
         break;
 
-    case 'O': /* --userpass */
-        if (!m_pools.back()->setUserpass(arg)) {
-            return false;
-        }
-        break;
-
     case 'u': /* --user */
         m_pools.back()->setUser(arg);
         break;
@@ -449,41 +326,27 @@ bool Options::parseArg(int key, const char *arg)
         break;
 
     case 4001: /* --access-token */
-        free(m_apiToken);
-        m_apiToken = strdup(arg);
+        free(m_accessToken);
+        m_accessToken = strdup(arg);
         break;
 
-    case 4002: /* --worker-id */
-        free(m_apiWorkerId);
-        m_apiWorkerId = strdup(arg);
+    case 4002: /* --id */
+        free(m_id);
+        m_id = strdup(arg);
         break;
 
-    case 1402: /* --opencl-devices */
-        m_oclCLI.parseDevices(arg);
-        break;
+    case 1401: /* --intensity */
+        return parseArg(key, strtol(arg, nullptr, 10));
 
-    case 1403: /* --opencl-launch */
-        m_oclCLI.parseLaunch(arg);
-        break;
-
-    case 1401: /* --opencl-affinity */
-        m_oclCLI.parseAffinity(arg);
-        break;
-
-    case 'r':  /* --retries */
-    case 'R':  /* --retry-pause */
-    case 't':  /* --threads */
-    case 'v':  /* --av */
-    case 1003: /* --donate-level */
     case 1007: /* --print-time */
-    case 4000: /* --api-port */
-    case 1400: /* --opencl-platform */
+    case 4000: /* --port */
+    case 1400: /* --platform-index */
     case 1010: /* --variant */
         return parseArg(key, strtol(arg, nullptr, 10));
 
-    case 'B':  /* --background */
+    case 'b':  /* --background */
     case 'k':  /* --keepalive */
-    case 'S':  /* --syslog */
+    case 's':  /* --syslog */
     case 1005: /* --safe */
     case 1006: /* --nicehash */
         return parseBoolean(key, true);
@@ -491,7 +354,7 @@ bool Options::parseArg(int key, const char *arg)
     case 1002: /* --no-color */
         return parseBoolean(key, false);
 
-    case 'V': /* --version */
+    case 'v': /* --version */
         showVersion();
         return false;
 
@@ -499,17 +362,8 @@ bool Options::parseArg(int key, const char *arg)
         showUsage(0);
         return false;
 
-    case 1404: /* --print-platforms */
-        printPlatforms();
-        return false;
-
     case 'c': /* --config */
         parseConfig(arg);
-        break;
-
-    case 1008: /* --user-agent */
-        free(m_userAgent);
-        m_userAgent = strdup(arg);
         break;
 
     default:
@@ -524,41 +378,6 @@ bool Options::parseArg(int key, const char *arg)
 bool Options::parseArg(int key, uint64_t arg)
 {
     switch (key) {
-        case 'r': /* --retries */
-        if (arg < 1 || arg > 1000) {
-            showUsage(1);
-            return false;
-        }
-
-        m_retries = (int) arg;
-        break;
-
-    case 'R': /* --retry-pause */
-        if (arg < 1 || arg > 3600) {
-            showUsage(1);
-            return false;
-        }
-
-        m_retryPause = (int) arg;
-        break;
-
-    case 't': /* --threads */
-        if (arg < 1 || arg > 1024) {
-            showUsage(1);
-            return false;
-        }
-
-        //m_threads = arg;
-        break;
-
-    case 1003: /* --donate-level */
-        if (arg < 1 || arg > 99) {
-            return true;
-        }
-
-        m_donateLevel = (int) arg;
-        break;
-
     case 1007: /* --print-time */
         if (arg > 1000) {
             showUsage(1);
@@ -572,13 +391,17 @@ bool Options::parseArg(int key, uint64_t arg)
         m_pools.back()->setVariant((int) arg);
         break;
 
-    case 1400: /* --opencl-platform */
+    case 1400: /* --platform-index */
         m_platformIndex = (int) arg;
         break;
 
-    case 4000: /* --api-port */
+    case 1401: /* --intensity */
+        m_intensity = (size_t) arg;
+        break;
+
+    case 4000: /* --port */
         if (arg <= 65536) {
-            m_apiPort = (int) arg;
+            m_port = (int) arg;
         }
         break;
 
@@ -597,12 +420,12 @@ bool Options::parseBoolean(int key, bool enable)
         m_pools.back()->setKeepAlive(enable);
         break;
 
-    case 'B': /* --background */
+    case 'b': /* --background */
         m_background = enable;
         m_colors = enable ? false : m_colors;
         break;
 
-    case 'S': /* --syslog */
+    case 's': /* --syslog */
         m_syslog = enable;
         m_colors = enable ? false : m_colors;
         break;
@@ -636,14 +459,6 @@ Url *Options::parseUrl(const char *arg) const
     }
 
     return url;
-}
-
-
-void Options::adjust()
-{
-    for (Url *url : m_pools) {
-        url->adjust(m_algo);
-    }
 }
 
 
@@ -704,8 +519,11 @@ void Options::parseJSON(const struct option *option, const rapidjson::Value &obj
     if (option->has_arg && value.IsString()) {
         parseArg(option->val, value.GetString());
     }
-    else if (option->has_arg && value.IsInt64()) {
+    else if (option->has_arg && value.IsUint64()) {
         parseArg(option->val, value.GetUint64());
+    }
+    else if (option->has_arg && value.IsInt64()) {
+        parseArg(option->val, value.GetInt64());
     }
     else if (!option->has_arg && value.IsBool()) {
         parseBoolean(option->val, value.IsTrue());
@@ -717,8 +535,16 @@ void Options::parseThread(const rapidjson::Value &object)
 {
     OclThread *thread = new OclThread();
     thread->setIndex(object["index"].GetInt());
-    thread->setIntensity(object["intensity"].GetUint());
-    thread->setWorksize(object["worksize"].GetUint());
+
+	const rapidjson::Value &intensity = object["intensity"];
+	if (intensity.IsUint()) {
+		thread->setRawIntensity(intensity.GetUint());
+	}
+
+	const rapidjson::Value &worksize = object["worksize"];
+	if (worksize.IsUint()) {
+		thread->setWorksize(worksize.GetUint());
+	}
 
     const rapidjson::Value &affinity = object["affine_to_cpu"];
     if (affinity.IsInt()) {
@@ -743,37 +569,7 @@ void Options::showUsage(int status) const
 
 void Options::showVersion()
 {
-    printf(APP_NAME " " APP_VERSION "\n built on " __DATE__
-
-#   if defined(__clang__)
-    " with clang " __clang_version__);
-#   elif defined(__GNUC__)
-    " with GCC");
-    printf(" %d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
-#   elif defined(_MSC_VER)
-    " with MSVC");
-    printf(" %d", MSVC_VERSION);
-#   else
-    );
-#   endif
-
-    printf("\n features:"
-#   if defined(__i386__) || defined(_M_IX86)
-    " i386"
-#   elif defined(__x86_64__) || defined(_M_AMD64)
-    " x86_64"
-#   endif
-
-#   if defined(__AES__) || defined(_MSC_VER)
-    " AES-NI"
-#   endif
-    "\n");
-
-    printf("\nlibuv/%s\n", uv_version_string());
-
-#   ifndef XMRIG_NO_HTTPD
-    printf("libmicrohttpd/%s\n", MHD_get_version());
-#   endif
+    printf("%s\n", Platform::versionString());
 }
 
 
@@ -787,7 +583,7 @@ bool Options::setAlgo(const char *algo)
 
 #       ifndef XMRIG_NO_AEON
         if (i == ARRAY_SIZE(algo_names) - 1 && !strcmp(algo, "cryptonight-light")) {
-            m_algo = xmrig::ALGO_CRYPTONIGHT_LITE;
+            m_algo = ALGO_CRYPTONIGHT_LITE;
             break;
         }
 #       endif

@@ -5,7 +5,6 @@
  * Copyright 2014-2016 Wolf9466    <https://github.com/OhGodAPet>
  * Copyright 2016      Jay D Dee   <jayddee246@gmail.com>
  * Copyright 2017-2018 XMR-Stak    <https://github.com/fireice-uk>, <https://github.com/psychocrypt>
- * Copyright 2018      Lee Clagett <https://github.com/vtnerd>
  * Copyright 2016-2018 XMRig       <https://github.com/xmrig>, <support@xmrig.com>
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -31,8 +30,7 @@
 
 
 #include "align.h"
-#include "net/Id.h"
-#include "xmrig.h"
+#include "net/JobId.h"
 
 
 class Job
@@ -53,7 +51,7 @@ public:
     inline const char *coin() const        { return m_coin; }
     inline const uint32_t *nonce() const   { return reinterpret_cast<const uint32_t*>(m_blob + 39); }
     inline const uint8_t *blob() const     { return m_blob; }
-    inline const xmrig::Id &id() const     { return m_id; }
+    inline const JobId &id() const     { return m_id; }
     inline int poolId() const              { return m_poolId; }
     inline int threadId() const            { return m_threadId; }
     inline int variant() const             { return (m_variant == xmrig::VARIANT_AUTO ? (m_blob[0] > 6 ? 1 : 0) : m_variant); }
@@ -88,7 +86,7 @@ private:
     size_t m_size;
     uint64_t m_diff;
     uint64_t m_target;
-    xmrig::Id m_id;
+    JobId m_id;
 
 #   ifdef XMRIG_PROXY_PROJECT
     VAR_ALIGN(16, char m_rawBlob[169]);

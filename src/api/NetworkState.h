@@ -41,9 +41,11 @@ public:
     uint32_t avgTime() const;
     uint32_t latency() const;
     void add(const SubmitResult &result, const char *error);
+    void setUserMask(const char *user);
     void setPool(const char *host, int port, const char *ip);
     void stop();
 
+    char userMask[256];
     char pool[256];
     std::array<uint64_t, 10> topDiff { { } };
     uint32_t diff;

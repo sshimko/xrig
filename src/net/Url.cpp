@@ -130,28 +130,11 @@ bool Url::parse(const char *url)
     }
 
     const size_t size = port++ - base + 1;
+
     m_host = new char[size]();
     memcpy(m_host, base, size - 1);
 
     m_port = (uint16_t) strtol(port, nullptr, 10);
-    return true;
-}
-
-
-bool Url::setUserpass(const char *userpass)
-{
-    const char *p = strchr(userpass, ':');
-    if (!p) {
-        return false;
-    }
-
-    free(m_user);
-    free(m_password);
-
-    m_user = static_cast<char*>(calloc(p - userpass + 1, 1));
-    strncpy(m_user, userpass, p - userpass);
-    m_password = strdup(p + 1);
-
     return true;
 }
 
@@ -169,7 +152,7 @@ const char *Url::url() const
 }
 
 
-void Url::adjust(int algo)
+void Url::setAlgo(int algo)
 {
     if (!isValid()) {
         return;

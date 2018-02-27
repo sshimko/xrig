@@ -6,6 +6,7 @@
  * Copyright 2016      Jay D Dee   <jayddee246@gmail.com>
  * Copyright 2017-2018 XMR-Stak    <https://github.com/fireice-uk>, <https://github.com/psychocrypt>
  * Copyright 2016-2018 XMRig       <https://github.com/xmrig>, <support@xmrig.com>
+
  *
  *   This program is free software: you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -41,6 +42,11 @@ struct option;
 class Options
 {
 public:
+    enum Algo {
+        ALGO_CRYPTONIGHT,      /* CryptoNight (Monero) */
+        ALGO_CRYPTONIGHT_LITE, /* CryptoNight-Lite (AEON) */
+    };
+
     enum AlgoVariant {
         AV0_AUTO,
         AV1_AESNI,
@@ -55,19 +61,17 @@ public:
 
     inline bool background() const                        { return m_background; }
     inline bool colors() const                            { return m_colors; }
-    inline bool isAutoConf() const                        { return m_autoConf; }
     inline bool syslog() const                            { return m_syslog; }
-    inline const char *apiToken() const                   { return m_apiToken; }
-    inline const char *apiWorkerId() const                { return m_apiWorkerId; }
+    inline const char *accessToken() const                { return m_accessToken; }
+    inline const char *id() const                         { return m_id; }
     inline const char *configName() const                 { return m_configName; }
     inline const char *logFile() const                    { return m_logFile; }
-    inline const char *userAgent() const                  { return m_userAgent; }
     inline const std::vector<OclThread*> &threads() const { return m_threads; }
     inline const std::vector<Url*> &pools() const         { return m_pools; }
     inline int algo() const                               { return m_algo; }
     inline int algoVariant() const                        { return m_algoVariant; }
-    inline int apiPort() const                            { return m_apiPort; }
-    inline int donateLevel() const                        { return m_donateLevel; }
+    inline int port() const                               { return m_port; }
+    inline size_t intensity() const                       { return m_intensity; }
     inline int platformIndex() const                      { return m_platformIndex; }
     inline int printTime() const                          { return m_printTime; }
     inline int retries() const                            { return m_retries; }
@@ -77,7 +81,7 @@ public:
     inline static void release()                          { delete m_self; }
 
     bool oclInit();
-    bool save();
+
     const char *algoName() const;
 
 private:
@@ -93,7 +97,6 @@ private:
     bool parseArg(int key, uint64_t arg);
     bool parseBoolean(int key, bool enable);
     Url *parseUrl(const char *arg) const;
-    void adjust();
     void parseConfig(const char *fileName);
     void parseJSON(const struct option *option, const rapidjson::Value &object);
     void parseThread(const rapidjson::Value &object);
@@ -102,21 +105,18 @@ private:
 
     bool setAlgo(const char *algo);
 
-    bool m_autoConf;
     bool m_background;
     bool m_colors;
     bool m_ready;
-    bool m_shouldSave;
     bool m_syslog;
-    char *m_apiToken;
-    char *m_apiWorkerId;
+    char *m_accessToken;
+    char *m_id;
     char *m_configName;
     char *m_logFile;
-    char *m_userAgent;
     int m_algo;
     int m_algoVariant;
-    int m_apiPort;
-    int m_donateLevel;
+    int m_port;
+    size_t m_intensity;
     int m_platformIndex;
     int m_printTime;
     int m_retries;

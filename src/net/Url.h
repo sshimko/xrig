@@ -54,9 +54,8 @@ public:
     inline void setVariant(bool monero)      { m_variant = monero; }
 
     bool parse(const char *url);
-    bool setUserpass(const char *userpass);
     const char *url() const;
-    void adjust(int algo);
+    void setAlgo(int algo);
     void setPassword(const char *password);
     void setUser(const char *user);
     void setVariant(int variant);

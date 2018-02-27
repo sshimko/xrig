@@ -37,11 +37,7 @@ public:
     OclCLI();
 
     bool setup(std::vector<OclThread*> &threads);
-    void autoConf(std::vector<OclThread*> &threads, int *platformIndex);
-    void parseLaunch(const char *arg);
-
-    inline void parseAffinity(const char *arg) { parse(m_affinity, arg); }
-    inline void parseDevices(const char *arg)  { parse(m_devices, arg); }
+    void autoConf(std::vector<OclThread*> &threads, int *platformIndex, size_t *intensity);
 
 private:
     inline bool isEmpty() const           { return m_devices.empty() && m_intensity.empty(); }

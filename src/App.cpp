@@ -86,7 +86,7 @@ App::App(int argc, char **argv) :
     }
 #   endif
 
-    Platform::init(m_options->userAgent());
+    Platform::init();
 
     m_network = new Network(m_options);
 
@@ -133,7 +133,7 @@ int App::exec()
 #   endif
 
 #   ifndef XMRIG_NO_HTTPD
-    m_httpd = new Httpd(m_options->apiPort(), m_options->apiToken());
+    m_httpd = new Httpd(m_options->port(), m_options->accessToken());
     m_httpd->start();
 #   endif
 

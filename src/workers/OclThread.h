@@ -35,27 +35,27 @@ class OclThread
 {
 public:
     OclThread();
-    OclThread(size_t index, size_t intensity, size_t worksize, int affinity = -1);
+    OclThread(size_t index, size_t rawIntensity = 0, size_t worksize = 8, int affinity = -1);
     ~OclThread();
 
-    inline int affinity() const     { return m_affinity; }
     inline int threadId() const     { return m_threadId; }
-    inline size_t index() const     { return m_index; }
-    inline size_t intensity() const { return m_intensity; }
+	inline size_t index() const     { return m_index; }
+	inline size_t rawIntensity() const { return m_rawIntensity; }
     inline size_t worksize() const  { return m_worksize; }
+    inline int affinity() const     { return m_affinity; }
 
-    inline void setAffinity(int affinity)      { m_affinity = affinity; }
     inline void setIndex(size_t index)         { m_index = index; }
-    inline void setIntensity(size_t intensity) { m_intensity = intensity; }
+	inline void setRawIntensity(size_t intensity) { m_rawIntensity = intensity; }
     inline void setThreadId(int threadId)      { m_threadId = threadId; }
-    inline void setWorksize(size_t worksize)   { m_worksize = worksize; }
+	inline void setWorksize(size_t worksize)   { m_worksize = worksize; }
+    inline void setAffinity(int affinity)      { m_affinity = affinity; }
 
 private:
-    int m_affinity;
     int m_threadId;
     size_t m_index;
-    size_t m_intensity;
+    size_t m_rawIntensity;
     size_t m_worksize;
+    int m_affinity;
 };
 
 

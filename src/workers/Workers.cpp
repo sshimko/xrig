@@ -30,6 +30,7 @@
 #endif
 
 
+#include "amd/Adl.h"
 #include "amd/OclGPU.h"
 #include "api/Api.h"
 #include "crypto/CryptoNight.h"
@@ -41,7 +42,6 @@
 #include "workers/Hashrate.h"
 #include "workers/OclThread.h"
 #include "workers/Workers.h"
-#include "xmrig.h"
 
 
 bool Workers::m_active = false;
@@ -52,7 +52,8 @@ Job Workers::m_job;
 std::atomic<int> Workers::m_paused;
 std::atomic<uint64_t> Workers::m_sequence;
 std::list<Job> Workers::m_queue;
-std::vector<Handle*> Workers::m_workers;
+std::vector<Handle*> Workers::m_handles;
+std::map<int, std::vector<Handle*>> Workers::m_gpus;
 uint64_t Workers::m_ticks = 0;
 uv_async_t Workers::m_async;
 uv_mutex_t Workers::m_mutex;
@@ -80,6 +81,7 @@ struct JobBaton
 
 bool Workers::start(const std::vector<OclThread*> &threads)
 {
+    std::vector<int> busIds;
     const size_t count = threads.size();
     m_hashrate = new Hashrate((int) count);
 
@@ -99,7 +101,7 @@ bool Workers::start(const std::vector<OclThread*> &threads)
 
     for (size_t i = 0; i < count; ++i) {
         const OclThread *thread = threads[i];
-        contexts[i] = GpuContext(thread->index(), thread->intensity(), thread->worksize());
+        contexts[i] = GpuContext(thread->index(), thread->rawIntensity(), thread->worksize());
     }
 
     if (InitOpenCL(contexts.data(), count, Options::i()->platformIndex()) != OCL_ERR_SUCCESS) {
@@ -107,8 +109,10 @@ bool Workers::start(const std::vector<OclThread*> &threads)
     }
 
     for (size_t i = 0; i < count; ++i) {
-        Handle *handle = new Handle((int) i, threads[i], &contexts[i], (int) count, Options::i()->algo() == xmrig::ALGO_CRYPTONIGHT_LITE);
-        m_workers.push_back(handle);
+        Handle *handle = new Handle((int) i, threads[i], &contexts[i], (int) count, Options::i()->algo() == Options::ALGO_CRYPTONIGHT_LITE);
+        m_handles.push_back(handle);
+        m_gpus[handle->ctx()->busId].push_back(handle);
+        busIds.push_back(handle->ctx()->busId);
         handle->start(Workers::onReady);
     }
 
@@ -121,7 +125,8 @@ bool Workers::start(const std::vector<OclThread*> &threads)
         uv_timer_start(&m_reportTimer, Workers::onReport, (printTime + 4) * 1000, printTime * 1000);
     }
 
-    Options::i()->save();
+    Adl::start(busIds);
+
     return true;
 }
 
@@ -193,8 +198,8 @@ void Workers::stop()
     m_paused   = 0;
     m_sequence = 0;
 
-    for (size_t i = 0; i < m_workers.size(); ++i) {
-        m_workers[i]->join();
+    for (size_t i = 0; i < m_handles.size(); ++i) {
+        m_handles[i]->join();
     }
 }
 
@@ -272,7 +277,7 @@ void Workers::onReport(uv_timer_t *handle)
 
 void Workers::onTick(uv_timer_t *handle)
 {
-    for (Handle *handle : m_workers) {
+    for (Handle *handle : m_handles) {
         if (!handle->worker()) {
             return;
         }
@@ -280,8 +285,9 @@ void Workers::onTick(uv_timer_t *handle)
         m_hashrate->add(handle->threadId(), handle->worker()->hashCount(), handle->worker()->timestamp());
     }
 
-    if ((m_ticks++ & 0xF) == 0)  {
+    if ((m_ticks++ & 0xF) == 0) {
         m_hashrate->updateHighest();
+        Adl::i()->tick();
     }
 
 #   ifndef XMRIG_NO_API

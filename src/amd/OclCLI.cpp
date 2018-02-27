@@ -34,7 +34,6 @@
 #include "log/Log.h"
 #include "Options.h"
 #include "workers/OclThread.h"
-#include "xmrig.h"
 
 
 OclCLI::OclCLI()
@@ -56,75 +55,42 @@ bool OclCLI::setup(std::vector<OclThread*> &threads)
 }
 
 
-void OclCLI::autoConf(std::vector<OclThread*> &threads, int *platformIndex)
+void OclCLI::autoConf(std::vector<OclThread*> &threads, int *platformIndex, size_t *intensity)
 {
     *platformIndex = getAMDPlatformIdx();
     if (*platformIndex == -1) {
-        LOG_ERR("No AMD OpenCL platform found. Possible driver issues or wrong vendor driver.");
+        LOG_ERR("No AMD OpenCL platform found");
         return;
     }
 
     std::vector<GpuContext> devices = getAMDDevices(*platformIndex);
     if (devices.empty()) {
-        LOG_ERR("No AMD device found.");
+        LOG_ERR("No AMD devices found.");
         return;
     }
 
     constexpr size_t byteToMiB = 1024u * 1024u;
-    const size_t hashMemSize   = Options::i()->algo() == xmrig::ALGO_CRYPTONIGHT ? MONERO_MEMORY : AEON_MEMORY;
+    const size_t hashMemSize   = Options::i()->algo() == Options::ALGO_CRYPTONIGHT ? MONERO_MEMORY : AEON_MEMORY;
 
     for (GpuContext &ctx : devices) {
         size_t maxThreads = 1000u;
-        if (ctx.name.compare("gfx901") == 0) {
+        int gpuThreads = 1;
+
+        // rx vega
+        if (ctx.deviceName.find("687F") == 0) {
             maxThreads = 2024u;
+            gpuThreads = 2;
         }
 
         const size_t availableMem      = ctx.freeMem - (128u * byteToMiB);
         const size_t perThread         = hashMemSize + 224u;
-        const size_t maxIntensity      = availableMem / perThread;
-        const size_t possibleIntensity = std::min(maxThreads, maxIntensity);
-        const size_t intensity         = (possibleIntensity / (8 * ctx.computeUnits)) * ctx.computeUnits * 8;
+        const size_t maxIntensity      = std::min(maxThreads, availableMem / perThread);
+        const size_t rawIntensity      = (maxIntensity / (8 * ctx.computeUnits)) * ctx.computeUnits * 8;
 
-        threads.push_back(new OclThread(ctx.deviceIdx, intensity, 8));
-    }
-}
-
-
-void OclCLI::parseLaunch(const char *arg)
-{
-    char *value = strdup(arg);
-    char *pch   = strtok(value, ",");
-    std::vector<char *> tmp;
-
-    while (pch != nullptr) {
-        tmp.push_back(pch);
-        pch = strtok(nullptr, ",");
-    }
-
-    for (char *config : tmp) {
-        pch       = strtok(config, "x");
-        int count = 0;
-
-        while (pch != nullptr && count < 2) {
-            count++;
-
-            const int v = (int) strtoul(pch, nullptr, 10);
-            if (count == 1) {
-                m_intensity.push_back(v > 0 ? v : 0);
-            }
-            else if (count == 2) {
-                m_worksize.push_back(v > 0 ? v : 8);
-            }
-
-            pch = strtok(nullptr, "x");
-        }
-
-        if (count == 1) {
-            m_worksize.push_back(8);
+        for (int i = 0; i < gpuThreads; i++) {
+            threads.push_back(new OclThread(ctx.deviceIdx, intensity ? *intensity : std::min(rawIntensity, maxIntensity), 8));
         }
     }
-
-    free(value);
 }
 
 

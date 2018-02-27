@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-project(xmrig-amd)
+
+project(xrig)
 
 option(WITH_AEON  "CryptoNight-Lite support" ON)
 option(WITH_HTTPD "HTTP REST API" ON)
@@ -10,6 +11,7 @@ include (CheckIncludeFile)
 set(HEADERS
     src/3rdparty/align.h
     src/amd/cryptonight.h
+    src/amd/Adl.h
     src/amd/GpuContext.h
     src/amd/OclCLI.h
     src/amd/OclGPU.h
@@ -30,8 +32,8 @@ set(HEADERS
     src/log/FileLog.h
     src/log/Log.h
     src/net/Client.h
-    src/net/Id.h
     src/net/Job.h
+    src/net/JobId.h
     src/net/JobResult.h
     src/net/Network.h
     src/net/strategies/DonateStrategy.h
@@ -48,7 +50,6 @@ set(HEADERS
     src/workers/OclThread.h
     src/workers/OclWorker.h
     src/workers/Workers.h
-    src/xmrig.h
    )
 
 set(HEADERS_CRYPTO
@@ -85,6 +86,7 @@ set(SOURCES
     src/net/strategies/SinglePoolStrategy.cpp
     src/net/SubmitResult.cpp
     src/net/Url.cpp
+    src/amd/Adl.cpp
     src/amd/OclCLI.cpp
     src/amd/OclGPU.cpp
     src/Options.cpp
@@ -95,7 +97,7 @@ set(SOURCES
     src/workers/Handle.cpp
     src/workers/Hashrate.cpp
     src/workers/Workers.cpp
-    src/xmrig.cpp
+    src/xrig.cpp
    )
 
 set(SOURCES_CRYPTO
@@ -133,7 +135,6 @@ else()
     set(EXTRA_LIBS pthread)
 endif()
 
-add_definitions(/DXMRIG_AMD_PROJECT)
 add_definitions(/DUNICODE)
 add_definitions(/DXMRIG_NO_LIBCPUID)
 add_definitions(/D__STDC_FORMAT_MACROS)

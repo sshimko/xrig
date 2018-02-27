@@ -23,7 +23,10 @@
 
 #include <math.h>
 #include <string.h>
+#include <time.h>
 #include <uv.h>
+#include <map>
+#include <vector>
 
 #if _WIN32
 #   include "winsock2.h"
@@ -32,17 +35,19 @@
 #endif
 
 
+#include "amd/Adl.h"
 #include "api/ApiState.h"
 #include "Cpu.h"
 #include "net/Job.h"
+#include "net/Url.h"
 #include "Options.h"
 #include "Platform.h"
 #include "rapidjson/document.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/prettywriter.h"
-#include "version.h"
+#include "workers/Workers.h"
 #include "workers/Hashrate.h"
-
+#include "workers/Handle.h"
 
 extern "C"
 {
@@ -50,7 +55,7 @@ extern "C"
 }
 
 
-static inline double normalize(double d)
+static inline double normalize2(double d)
 {
     if (!isnormal(d)) {
         return 0.0;
@@ -60,25 +65,37 @@ static inline double normalize(double d)
 }
 
 
+static inline double normalize3(double d)
+{
+    if (!isnormal(d)) {
+        return 0.0;
+    }
+
+    return floor(d * 1000.0) / 1000.0;
+}
+
+
+static inline time_t now()
+{
+    auto now = std::chrono::system_clock::now();
+    return std::chrono::system_clock::to_time_t( now );
+}
+
+
 ApiState::ApiState()
 {
     m_threads  = (int) Options::i()->threads().size();
     m_hashrate = new double[m_threads * 3]();
+    m_start = now();
 
     memset(m_totalHashrate, 0, sizeof(m_totalHashrate));
-    memset(m_workerId, 0, sizeof(m_workerId));
+    memset(m_id, 0, sizeof(m_id));
 
-    if (Options::i()->apiWorkerId()) {
-        strncpy(m_workerId, Options::i()->apiWorkerId(), sizeof(m_workerId) - 1);
+    if (Options::i()->id()) {
+        strncpy(m_id, Options::i()->id(), sizeof(m_id) - 1);
     }
     else {
-        gethostname(m_workerId, sizeof(m_workerId) - 1);
-    }
-
-    genId();
-
-    for (const OclThread *thread : Options::i()->threads()) {
-        m_gpuThreads.push_back(*thread);
+        gethostname(m_id, sizeof(m_id) - 1);
     }
 }
 
@@ -94,9 +111,10 @@ char *ApiState::get(const char *url, int *status) const
     rapidjson::Document doc;
     doc.SetObject();
 
-    getIdentify(doc);
+    getId(doc);
     getMiner(doc);
     getHashrate(doc);
+    getGpus(doc);
     getResults(doc);
     getConnection(doc);
 
@@ -136,45 +154,13 @@ char *ApiState::finalize(rapidjson::Document &doc) const
 }
 
 
-void ApiState::genId()
-{
-    memset(m_id, 0, sizeof(m_id));
-
-    uv_interface_address_t *interfaces;
-    int count = 0;
-
-    if (uv_interface_addresses(&interfaces, &count) < 0) {
-        return;
-    }
-
-    for (int i = 0; i < count; i++) {
-        if (!interfaces[i].is_internal && interfaces[i].address.address4.sin_family == AF_INET) {
-            uint8_t hash[200];
-            const size_t addrSize = sizeof(interfaces[i].phys_addr);
-            const size_t inSize   = strlen(APP_KIND) + addrSize;
-
-            uint8_t *input = new uint8_t[inSize]();
-            memcpy(input, interfaces[i].phys_addr, addrSize);
-            memcpy(input + addrSize, APP_KIND, strlen(APP_KIND));
-
-            keccak(input, static_cast<int>(inSize), hash, sizeof(hash));
-            Job::toHex(hash, 8, m_id);
-
-            delete [] input;
-            break;
-        }
-    }
-
-    uv_free_interface_addresses(interfaces, count);
-}
-
-
 void ApiState::getConnection(rapidjson::Document &doc) const
 {
     auto &allocator = doc.GetAllocator();
 
     rapidjson::Value connection(rapidjson::kObjectType);
     connection.AddMember("pool",      rapidjson::StringRef(m_network.pool), allocator);
+    connection.AddMember("user",      rapidjson::StringRef(m_network.userMask), allocator);
     connection.AddMember("uptime",    m_network.connectionTime(), allocator);
     connection.AddMember("ping",      m_network.latency(), allocator);
     connection.AddMember("failures",  m_network.failures, allocator);
@@ -184,38 +170,114 @@ void ApiState::getConnection(rapidjson::Document &doc) const
 }
 
 
+void ApiState::getGpus(rapidjson::Document &doc) const
+{
+    auto &allocator = doc.GetAllocator();
+
+    rapidjson::Value gpus(rapidjson::kArrayType);
+
+    for (const auto& map : Workers::gpus()) {
+        std::vector<Handle*> handles = map.second;
+
+        rapidjson::Value gpu(rapidjson::kObjectType);
+        gpu.AddMember("bus_id", handles[0]->ctx()->busId, allocator);
+        gpu.AddMember("adapter_index", Adl::i()->getAdapterIndex(handles[0]->ctx()->busId), allocator);
+        gpu.AddMember("device_name", rapidjson::StringRef(handles[0]->ctx()->deviceName.c_str()), allocator);
+        gpu.AddMember("temperature", Adl::i()->getTemperature(handles[0]->ctx()->busId) / 1000, allocator);
+
+        const ADLODNPerformanceStatus* odNPerformanceStatus = Adl::i()->getPerformanceStatus(handles[0]->ctx()->busId);
+        gpu.AddMember("core_clock", odNPerformanceStatus->iCoreClock / 100, allocator);
+        gpu.AddMember("memory_clock", odNPerformanceStatus->iMemoryClock / 100, allocator);
+
+        const ADLODNFanControl* odNFanControl = Adl::i()->getFanControl(handles[0]->ctx()->busId);
+        gpu.AddMember("fan_speed", odNFanControl->iCurrentFanSpeed, allocator);
+
+        const ADLODNPowerLimitSetting* odNPowerControl = Adl::i()->getPowerLimit(handles[0]->ctx()->busId);
+
+        const ADLODNPerformanceLevelsX2* odNSystemClocks = Adl::i()->getSystemClocks(handles[0]->ctx()->busId);
+        const ADLODNPerformanceLevelsX2* odNMemoryClocks = Adl::i()->getMemoryClocks(handles[0]->ctx()->busId);
+        rapidjson::Value profile(rapidjson::kObjectType);
+        rapidjson::Value system(rapidjson::kArrayType);
+        rapidjson::Value memory(rapidjson::kArrayType);
+
+        for (int i=0 ;i <ADL_PERFORMANCE_LEVELS; i++) {
+            if (odNSystemClocks->aLevels[i].iEnabled) {
+                rapidjson::Value level(rapidjson::kObjectType);
+                level.AddMember("clock", odNSystemClocks->aLevels[i].iClock / 100, allocator);
+                level.AddMember("vddc", normalize3(odNSystemClocks->aLevels[i].iVddc / 1000.0), allocator);
+                system.PushBack(level, allocator);
+            }
+        }
+
+        for (int i=0 ;i <ADL_PERFORMANCE_LEVELS; i++) {
+            if (odNMemoryClocks->aLevels[i].iEnabled) {
+                rapidjson::Value level(rapidjson::kObjectType);
+                level.AddMember("clock", odNMemoryClocks->aLevels[i].iClock / 100, allocator);
+                level.AddMember("vddc", normalize3(odNMemoryClocks->aLevels[i].iVddc / 1000.0), allocator);
+                memory.PushBack(level, allocator);
+            }
+        }
+
+        profile.AddMember("system", system, allocator);
+        profile.AddMember("memory", memory, allocator);
+        profile.AddMember("target_temperature", odNFanControl->iTargetTemperature, allocator);
+        profile.AddMember("power_limit", odNPowerControl->iTDPLimit, allocator);
+
+        gpu.AddMember("profile", profile, allocator);
+
+        rapidjson::Value threads(rapidjson::kArrayType);
+
+        double sum_hashrate_10s = 0.0;
+        double sum_hashrate_60s = 0.0;
+        double sum_hashrate_15m = 0.0;    
+
+        for (const Handle *handle : handles) {
+            rapidjson::Value thread(rapidjson::kObjectType);
+            thread.AddMember("intensity", (uint64_t)handle->ctx()->rawIntensity, allocator);
+
+            int i = handle->threadId() * 3;
+            double hashrate_10s = normalize2(m_hashrate[i]);
+            double hashrate_60s = normalize2(m_hashrate[i + 1]);
+            double hashrate_15m = normalize2(m_hashrate[i + 2]);  
+
+            thread.AddMember("hashrate_10s", hashrate_10s, allocator);
+            thread.AddMember("hashrate_60s", hashrate_60s, allocator);
+            thread.AddMember("hashrate_15m", hashrate_15m, allocator);
+
+            sum_hashrate_10s += hashrate_10s;
+            sum_hashrate_60s += hashrate_60s;
+            sum_hashrate_15m += hashrate_15m;
+
+            threads.PushBack(thread, allocator);
+        }
+
+        gpu.AddMember("threads", threads, allocator);
+
+        gpu.AddMember("hashrate_10s", sum_hashrate_10s, allocator);
+        gpu.AddMember("hashrate_60s", sum_hashrate_60s, allocator);
+        gpu.AddMember("hashrate_15m", sum_hashrate_15m, allocator);
+
+        gpus.PushBack(gpu, allocator);
+    }
+
+    doc.AddMember("gpus", gpus, allocator);
+}
+
+
 void ApiState::getHashrate(rapidjson::Document &doc) const
 {
     auto &allocator = doc.GetAllocator();
 
-    rapidjson::Value hashrate(rapidjson::kObjectType);
-    rapidjson::Value total(rapidjson::kArrayType);
-    rapidjson::Value threads(rapidjson::kArrayType);
-
-    for (int i = 0; i < 3; ++i) {
-        total.PushBack(normalize(m_totalHashrate[i]), allocator);
-    }
-
-    for (int i = 0; i < m_threads * 3; i += 3) {
-        rapidjson::Value thread(rapidjson::kArrayType);
-        thread.PushBack(normalize(m_hashrate[i]),     allocator);
-        thread.PushBack(normalize(m_hashrate[i + 1]), allocator);
-        thread.PushBack(normalize(m_hashrate[i + 2]), allocator);
-
-        threads.PushBack(thread, allocator);
-    }
-
-    hashrate.AddMember("total",   total, allocator);
-    hashrate.AddMember("highest", normalize(m_highestHashrate), allocator);
-    hashrate.AddMember("threads", threads, allocator);
-    doc.AddMember("hashrate",     hashrate, allocator);
+    doc.AddMember("hashrate_10s", normalize2(m_totalHashrate[0]), allocator);
+    doc.AddMember("hashrate_60s", normalize2(m_totalHashrate[1]), allocator);
+    doc.AddMember("hashrate_15m", normalize2(m_totalHashrate[2]), allocator);
+    doc.AddMember("hashrate_max", normalize2(m_highestHashrate), allocator);
 }
 
 
-void ApiState::getIdentify(rapidjson::Document &doc) const
+void ApiState::getId(rapidjson::Document &doc) const
 {
-    doc.AddMember("id",        rapidjson::StringRef(m_id),       doc.GetAllocator());
-    doc.AddMember("worker_id", rapidjson::StringRef(m_workerId), doc.GetAllocator());
+    doc.AddMember("id", rapidjson::StringRef(m_id), doc.GetAllocator());
 }
 
 
@@ -223,19 +285,9 @@ void ApiState::getMiner(rapidjson::Document &doc) const
 {
     auto &allocator = doc.GetAllocator();
 
-    rapidjson::Value cpu(rapidjson::kObjectType);
-    cpu.AddMember("brand",   rapidjson::StringRef(Cpu::brand()), allocator);
-    cpu.AddMember("aes",     Cpu::hasAES(), allocator);
-    cpu.AddMember("x64",     Cpu::isX64(), allocator);
-    cpu.AddMember("sockets", Cpu::sockets(), allocator);
-
-    doc.AddMember("version",      APP_VERSION, allocator);
-    doc.AddMember("kind",         APP_KIND, allocator);
-    doc.AddMember("ua",           rapidjson::StringRef(Platform::userAgent()), allocator);
-    doc.AddMember("cpu",          cpu, allocator);
+    doc.AddMember("version",      rapidjson::StringRef(Platform::versionString()), allocator);
     doc.AddMember("algo",         rapidjson::StringRef(Options::i()->algoName()), allocator);
-    doc.AddMember("hugepages",    false, allocator);
-    doc.AddMember("donate_level", Options::i()->donateLevel(), allocator);
+    doc.AddMember("uptime",       difftime(now(), m_start), allocator);
 }
 
 

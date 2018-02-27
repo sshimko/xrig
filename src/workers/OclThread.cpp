@@ -29,21 +29,21 @@
 
 
 OclThread::OclThread() :
-    m_affinity(-1),
     m_threadId(0),
     m_index(0),
-    m_intensity(0),
-    m_worksize(0)
+	m_rawIntensity(0),
+    m_worksize(8),
+	m_affinity(-1)
 {
 }
 
 
-OclThread::OclThread(size_t index, size_t intensity, size_t worksize, int affinity) :
-    m_affinity(affinity),
+OclThread::OclThread(size_t index, size_t rawIntensity, size_t worksize, int affinity) :
     m_threadId(0),
-    m_index(index),
-    m_intensity(intensity),
-    m_worksize(worksize)
+	m_index(index),
+	m_rawIntensity(rawIntensity),
+    m_worksize(worksize),
+	m_affinity(affinity)
 {
 }
 
