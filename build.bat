@@ -17,6 +17,7 @@ echo set ss=%%time:~6,2%%
 echo xrig.exe --log-file=xrig_%%yyyy%%%%mm%%%%dd%%_%%hh%%%%mm%%%%ss%%.log
 echo pause
 ) > build\%configuration%\run.bat
+(
 echo cd %%~dp0
 echo devcon.exe disable "PCI\VEN_1002&DEV_687F"
 echo timeout /t 5
