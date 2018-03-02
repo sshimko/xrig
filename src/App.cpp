@@ -76,8 +76,8 @@ App::App(int argc, char **argv) :
         m_console = new Console(this);
     }
 
-    if (m_options->logFile()) {
-        Log::add(new FileLog(m_options->logFile()));
+    if (m_options->log()) {
+        Log::add(new FileLog(m_options->log()));
     }
 
 #   ifdef HAVE_SYSLOG_H

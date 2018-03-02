@@ -30,6 +30,7 @@
 #include <vector>
 
 
+#include "amd/Adl.h"
 #include "amd/OclCLI.h"
 #include "rapidjson/fwd.h"
 
@@ -37,7 +38,6 @@
 class OclThread;
 class Url;
 struct option;
-
 
 class Options
 {
@@ -64,8 +64,7 @@ public:
     inline bool syslog() const                            { return m_syslog; }
     inline const char *accessToken() const                { return m_accessToken; }
     inline const char *id() const                         { return m_id; }
-    inline const char *configName() const                 { return m_configName; }
-    inline const char *logFile() const                    { return m_logFile; }
+    inline const char *log() const                        { return m_log; }
     inline const std::vector<OclThread*> &threads() const { return m_threads; }
     inline const std::vector<Url*> &pools() const         { return m_pools; }
     inline int algo() const                               { return m_algo; }
@@ -73,10 +72,13 @@ public:
     inline int port() const                               { return m_port; }
     inline size_t intensity() const                       { return m_intensity; }
     inline int platformIndex() const                      { return m_platformIndex; }
-    inline int printTime() const                          { return m_printTime; }
-    inline int retries() const                            { return m_retries; }
-    inline int retryPause() const                         { return m_retryPause; }
+    inline int printTime() const                          { return 60; }
+    inline int retries() const                            { return 5; }
+    inline int retryPause() const                         { return 5; }
     inline void setColors(bool colors)                    { m_colors = colors; }
+    inline const std::vector<ADLODNPerformanceLevelX2*> &coreClocks() const { return m_coreClocks; }
+    inline const std::vector<ADLODNPerformanceLevelX2*> &memoryClocks() const { return m_memoryClocks; }
+    inline int targetTemperature() const                  { return m_targetTemperature; }
 
     inline static void release()                          { delete m_self; }
 
@@ -98,7 +100,9 @@ private:
     bool parseBoolean(int key, bool enable);
     Url *parseUrl(const char *arg) const;
     void parseConfig(const char *fileName);
+    void parseProfile(const struct option *option, const rapidjson::Value &object);
     void parseJSON(const struct option *option, const rapidjson::Value &object);
+    void parseLevel(int key, const rapidjson::Value &object);
     void parseThread(const rapidjson::Value &object);
     void showUsage(int status) const;
     void showVersion(void);
@@ -111,19 +115,19 @@ private:
     bool m_syslog;
     char *m_accessToken;
     char *m_id;
-    char *m_configName;
-    char *m_logFile;
+    char *m_config;
+    char *m_log;
     int m_algo;
     int m_algoVariant;
     int m_port;
     size_t m_intensity;
     int m_platformIndex;
-    int m_printTime;
-    int m_retries;
-    int m_retryPause;
     OclCLI m_oclCLI;
     std::vector<OclThread*> m_threads;
     std::vector<Url*> m_pools;
+    std::vector<ADLODNPerformanceLevelX2*> m_coreClocks;
+    std::vector<ADLODNPerformanceLevelX2*> m_memoryClocks;
+    int m_targetTemperature;
 };
 
 #endif /* __OPTIONS_H__ */
