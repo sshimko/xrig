@@ -75,7 +75,6 @@ Options:\n\
   -k, --keepalive           send keepalive to prevent timeout (needs pool support)\n\
       --intensity=N         thread intensity\n\
       --platform-index=N    OpenCL platform index\n\
-      --colors              enable colored output\n\
   -b, --background          run the miner in the background\n\
   -c, --config=FILE         load a JSON-format configuration file\n\
   -l, --log=FILE            log all output to a file\n"
@@ -102,7 +101,6 @@ static struct option const options[] = {
     { "port",             1, nullptr, 4000 },
     { "id",               1, nullptr, 4002 },
     { "background",       0, nullptr, 'b'  },
-    { "colors",           0, nullptr, 2000 },
     { "config",           1, nullptr, 'c'  },
     { "help",             0, nullptr, 'h'  },
     { "keepalive",        0, nullptr ,'k'  },
@@ -124,7 +122,6 @@ static struct option const options[] = {
 static struct option const config_options[] = {
     { "algo",             1, nullptr, 'a'  },
     { "background",       0, nullptr, 'b'  },
-    { "colors",           0, nullptr, 2000 },
     { "log",              1, nullptr, 'l'  },
     { "platform_index",   1, nullptr, 1400 },
     { "syslog",           0, nullptr, 's'  },
@@ -199,7 +196,7 @@ const char *Options::algoName() const
 
 Options::Options(int argc, char **argv) :
     m_background(false),
-    m_colors(false),
+    m_colors(true),
     m_ready(false),
     m_syslog(false),
     m_accessToken(nullptr),
@@ -349,7 +346,6 @@ bool Options::parseArg(int key, const char *arg)
         return parseArg(key, strtol(arg, nullptr, 10));
 
     case 'b':  /* --background */
-    case 2000: /* --colors */
     case 'k':  /* --keepalive */
     case 's':  /* --syslog */
     case 1006: /* --nicehash */
@@ -426,10 +422,6 @@ bool Options::parseBoolean(int key, bool enable)
 
     case 1006: /* --nicehash */
         m_pools.back()->setNicehash(enable);
-        break;
-
-    case 2000: /* --colors */
-        m_colors = enable;
         break;
 
     default:

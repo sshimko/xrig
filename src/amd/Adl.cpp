@@ -158,7 +158,7 @@ Adl::Adl(const std::vector<int> busIds) {
 		for (auto i=0; i < odNSystemClocks.size(); i++) {
 		    setSystemClock(adapterIndex, i, odNSystemClocks[i]->iClock, odNSystemClocks[i]->iVddc);
 		}
-		for (auto i=0; i < memoryClocks.size(); i++) {
+		for (auto i=0; i < odNMemoryClocks.size(); i++) {
 		    setMemoryClock(adapterIndex, i, odNMemoryClocks[i]->iClock, odNMemoryClocks[i]->iVddc);
 		}
 		if (Options::i()->targetTemperature()) {
