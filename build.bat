@@ -14,7 +14,7 @@ echo set hh=%%time:~0,2%%
 echo if "%%hh:~0,1%%" == " " set hh=0%%hh:~1,1%%
 echo set mm=%%time:~3,2%%
 echo set ss=%%time:~6,2%%
-echo xrig.exe --log-file=xrig_%%yyyy%%%%mm%%%%dd%%_%%hh%%%%mm%%%%ss%%.log
+echo xrig.exe --colors --log=xrig_%%yyyy%%%%mm%%%%dd%%_%%hh%%%%mm%%%%ss%%.log
 echo pause
 ) > build\%configuration%\run.bat
 (
@@ -30,6 +30,6 @@ echo set hh=%%time:~0,2%%
 echo if "%%hh:~0,1%%" == " " set hh=0%%hh:~1,1%%
 echo set mm=%%time:~3,2%%
 echo set ss=%%time:~6,2%%
-echo xrig.exe --log-file=xrig_%%yyyy%%%%mm%%%%dd%%_%%hh%%%%mm%%%%ss%%.log
+echo xrig.exe --colors --log=xrig_%%yyyy%%%%mm%%%%dd%%_%%hh%%%%mm%%%%ss%%.log
 echo pause
 ) > build\%configuration%\run_with_reset.bat

@@ -3,16 +3,16 @@
 # Xrig
 Xrig is a high performance cryptonight miner for AMD cards. Optimized for large-scale use of RX Vega.
 
-GPU mining based on [Wolf9466](https://github.com/OhGodAPet) and [psychocrypt](https://github.com/psychocrypt) code. Forked from [XMRig AMD](https://github.com/xmrig/xmrig-amd)
+GPU mining based on [Wolf9466](https://github.com/OhGodAPet) and [psychocrypt](https://github.com/psychocrypt) code. Forked with love from [XMRig AMD](https://github.com/xmrig/xmrig-amd).
 <!--
 <img src="https://i.imgur.com/TFncsi7.png" width="696" >
 -->
 ## Features
 * High performance
 * Optimized for large-scale use of RX Vega
-* Powerful API
+* Rich API
 * Hardware monitoring
-* Built-in OverdriveN capabilities
+* OverdriveN capabilities (replaces Wattman and OverdriveNTool)
 * High level of auto configuration
 * Windows and Linux support
 * 1% dev donation
@@ -40,7 +40,7 @@ GPU mining based on [Wolf9466](https://github.com/OhGodAPet) and [psychocrypt](h
   -v, --version             output version information and exit
 ```
 
-### Config file.
+### Config file
 Sample config for an array of Vega's:
 ```json
 {
