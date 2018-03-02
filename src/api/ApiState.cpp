@@ -55,13 +55,23 @@ extern "C"
 }
 
 
-static inline double normalize(double d)
+static inline double normalize2(double d)
 {
     if (!isnormal(d)) {
         return 0.0;
     }
 
     return floor(d * 100.0) / 100.0;
+}
+
+
+static inline double normalize3(double d)
+{
+    if (!isnormal(d)) {
+        return 0.0;
+    }
+
+    return floor(d * 1000.0) / 1000.0;
 }
 
 
@@ -192,7 +202,7 @@ void ApiState::getGpus(rapidjson::Document &doc) const
             if (odNSystemClocks->aLevels[i].iEnabled) {
                 rapidjson::Value level(rapidjson::kObjectType);
                 level.AddMember("clock", odNSystemClocks->aLevels[i].iClock / 100, allocator);
-                level.AddMember("vddc", odNSystemClocks->aLevels[i].iVddc / 1000.0, allocator);
+                level.AddMember("vddc", normalize3(odNSystemClocks->aLevels[i].iVddc / 1000.0), allocator);
                 core_clocks.PushBack(level, allocator);
             }
         }
@@ -201,7 +211,7 @@ void ApiState::getGpus(rapidjson::Document &doc) const
             if (odNMemoryClocks->aLevels[i].iEnabled) {
                 rapidjson::Value level(rapidjson::kObjectType);
                 level.AddMember("clock", odNMemoryClocks->aLevels[i].iClock / 100, allocator);
-                level.AddMember("vddc", odNMemoryClocks->aLevels[i].iVddc / 1000.0, allocator);
+                level.AddMember("vddc", normalize3(odNMemoryClocks->aLevels[i].iVddc / 1000.0), allocator);
                 memory_clocks.PushBack(level, allocator);
             }
         }
@@ -223,9 +233,9 @@ void ApiState::getGpus(rapidjson::Document &doc) const
             thread.AddMember("intensity", (uint64_t)handle->ctx()->rawIntensity, allocator);
 
             int i = handle->threadId() * 3;
-            double hashrate_10s = normalize(m_hashrate[i]);
-            double hashrate_60s = normalize(m_hashrate[i + 1]);
-            double hashrate_15m = normalize(m_hashrate[i + 2]);  
+            double hashrate_10s = normalize2(m_hashrate[i]);
+            double hashrate_60s = normalize2(m_hashrate[i + 1]);
+            double hashrate_15m = normalize2(m_hashrate[i + 2]);  
 
             thread.AddMember("hashrate_10s", hashrate_10s, allocator);
             thread.AddMember("hashrate_60s", hashrate_60s, allocator);
@@ -255,10 +265,10 @@ void ApiState::getHashrate(rapidjson::Document &doc) const
 {
     auto &allocator = doc.GetAllocator();
 
-    doc.AddMember("hashrate_10s", normalize(m_totalHashrate[0]), allocator);
-    doc.AddMember("hashrate_60s", normalize(m_totalHashrate[1]), allocator);
-    doc.AddMember("hashrate_15m", normalize(m_totalHashrate[2]), allocator);
-    doc.AddMember("hashrate_max", normalize(m_highestHashrate), allocator);
+    doc.AddMember("hashrate_10s", normalize2(m_totalHashrate[0]), allocator);
+    doc.AddMember("hashrate_60s", normalize2(m_totalHashrate[1]), allocator);
+    doc.AddMember("hashrate_15m", normalize2(m_totalHashrate[2]), allocator);
+    doc.AddMember("hashrate_max", normalize2(m_highestHashrate), allocator);
 }
 
 
