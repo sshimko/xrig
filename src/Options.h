@@ -76,7 +76,7 @@ public:
     inline int retries() const                            { return 5; }
     inline int retryPause() const                         { return 5; }
     inline void setColors(bool colors)                    { m_colors = colors; }
-    inline const std::vector<ADLODNPerformanceLevelX2*> &coreClocks() const { return m_coreClocks; }
+    inline const std::vector<ADLODNPerformanceLevelX2*> &systemClocks() const { return m_systemClocks; }
     inline const std::vector<ADLODNPerformanceLevelX2*> &memoryClocks() const { return m_memoryClocks; }
     inline int targetTemperature() const                  { return m_targetTemperature; }
 
@@ -125,7 +125,7 @@ private:
     OclCLI m_oclCLI;
     std::vector<OclThread*> m_threads;
     std::vector<Url*> m_pools;
-    std::vector<ADLODNPerformanceLevelX2*> m_coreClocks;
+    std::vector<ADLODNPerformanceLevelX2*> m_systemClocks;
     std::vector<ADLODNPerformanceLevelX2*> m_memoryClocks;
     int m_targetTemperature;
 };

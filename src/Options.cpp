@@ -151,8 +151,8 @@ static struct option const api_options[] = {
 };
 
 static struct option const profile_options[] = {
-    { "core_clocks",          1, nullptr, 5000 },
-    { "memory_clocks",        1, nullptr, 5001 },
+    { "system",                 1, nullptr, 5000 },
+    { "memory",               1, nullptr, 5001 },
     { "target_temperature",   1, nullptr, 5002 },
     { 0, 0, 0, 0 }
 };
@@ -212,7 +212,7 @@ Options::Options(int argc, char **argv) :
     m_intensity(0),
     m_platformIndex(0),
     m_threads(0),
-    m_coreClocks(0),
+    m_systemClocks(0),
     m_memoryClocks(0),
     m_targetTemperature(0)
 {
@@ -397,7 +397,7 @@ bool Options::parseArg(int key, uint64_t arg)
         }
         break;
 
-    case 5002: /* target_temperature */
+    case 5002: /* profile.target_temperature */
         m_targetTemperature = (int) arg;
         break;
 
@@ -572,11 +572,11 @@ void Options::parseLevel(int key, const rapidjson::Value &object)
     }
 
     switch (key) {
-    case 5000: /* core_clocks */
-        m_coreClocks.push_back(odNPerformanceLevel);
+    case 5000: /* profile.system */
+        m_systemClocks.push_back(odNPerformanceLevel);
         break;
 
-    case 5001: /* memory_clocks */
+    case 5001: /* profile.memory */
         m_memoryClocks.push_back(odNPerformanceLevel);
         break;
 
