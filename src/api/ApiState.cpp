@@ -192,7 +192,7 @@ void ApiState::getGpus(rapidjson::Document &doc) const
             if (odNSystemClocks->aLevels[i].iEnabled) {
                 rapidjson::Value level(rapidjson::kObjectType);
                 level.AddMember("clock", odNSystemClocks->aLevels[i].iClock / 100, allocator);
-                level.AddMember("vddc", odNSystemClocks->aLevels[i].iVddc / 1000, allocator);
+                level.AddMember("vddc", odNSystemClocks->aLevels[i].iVddc / 1000.0, allocator);
                 core_clocks.PushBack(level, allocator);
             }
         }
@@ -201,7 +201,7 @@ void ApiState::getGpus(rapidjson::Document &doc) const
             if (odNMemoryClocks->aLevels[i].iEnabled) {
                 rapidjson::Value level(rapidjson::kObjectType);
                 level.AddMember("clock", odNMemoryClocks->aLevels[i].iClock / 100, allocator);
-                level.AddMember("vddc", odNMemoryClocks->aLevels[i].iVddc / 1000, allocator);
+                level.AddMember("vddc", odNMemoryClocks->aLevels[i].iVddc / 1000.0, allocator);
                 memory_clocks.PushBack(level, allocator);
             }
         }
