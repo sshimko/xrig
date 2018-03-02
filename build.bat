@@ -7,6 +7,7 @@ xcopy libuv-1.14.1-x64\libuv.dll build\%configuration%\ /Y
 xcopy devcon\devcon.exe build\%configuration%\ /Y
 (
 echo cd %%~dp0
+echo @echo off
 echo set yyyy=%%date:~10,4%%
 echo set mm=%%date:~4,2%%
 echo set dd=%%date:~7,2%%
@@ -23,6 +24,7 @@ echo devcon.exe disable "PCI\VEN_1002&DEV_687F"
 echo timeout /t 5
 echo devcon.exe enable "PCI\VEN_1002&DEV_687F"
 echo timeout /t 5
+echo @echo off
 echo set yyyy=%%date:~10,4%%
 echo set mm=%%date:~4,2%%
 echo set dd=%%date:~7,2%%
