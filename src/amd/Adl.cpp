@@ -144,7 +144,7 @@ Adl::Adl(const std::vector<int> busIds) {
 		temperature[busId] = OverdriveN_Temperature_Get(adapterIndex);
 
 		// fix underclocking for vega cards
-		setSystemClock(adapterIndex, 7, systemClocks[busId]->aLevels[7].iClock, systemClocks[busId]->aLevels[7].iVddc + 1);
+		setSystemClock(adapterIndex, 7, systemClocks[busId]->aLevels[7].iClock, systemClocks[busId]->aLevels[7].iVddc - 1);
 		setSystemClock(adapterIndex, 7, systemClocks[busId]->aLevels[7].iClock, systemClocks[busId]->aLevels[7].iVddc);
 
 		// apply profile
