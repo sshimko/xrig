@@ -56,6 +56,25 @@ Sample config for an array of Vega's:
     ],
     "api": {
         "port": 4444
+    },
+    "profile": {
+        "system": [
+            {"clock": 852,  "vddc": 0.800},
+            {"clock": 991,  "vddc": 0.900},
+            {"clock": 1138, "vddc": 0.950},
+            {"clock": 1269, "vddc": 1.000},
+            {"clock": 1312, "vddc": 1.050},
+            {"clock": 1474, "vddc": 1.100},
+            {"clock": 1538, "vddc": 1.150},
+            {"clock": 1590, "vddc": 1.200}
+        ],
+        "memory": [
+            {"clock": 167, "vddc": 0.800},
+            {"clock": 500, "vddc": 0.800},
+            {"clock": 700, "vddc": 0.900},
+            {"clock": 800, "vddc": 0.950}
+        ],
+        "target_temperature": 75
     }
 }
 ```

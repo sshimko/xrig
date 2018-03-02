@@ -152,14 +152,14 @@ Adl::Adl(const std::vector<int> busIds) {
 		setSystemClock(adapterIndex, 7, systemClocks[busId]->aLevels[7].iClock, systemClocks[busId]->aLevels[7].iVddc);
 
 		// apply profile
-		const std::vector<ADLODNPerformanceLevelX2*> &coreClocks = Options::i()->coreClocks();
-		const std::vector<ADLODNPerformanceLevelX2*> &memoryClocks = Options::i()->memoryClocks();
+		const std::vector<ADLODNPerformanceLevelX2*> &odNSystemClocks = Options::i()->systemClocks();
+		const std::vector<ADLODNPerformanceLevelX2*> &odNMemoryClocks = Options::i()->memoryClocks();
 
-		for (auto i=0; i < coreClocks.size(); i++) {
-		    setSystemClock(adapterIndex, i, coreClocks[i]->iClock, coreClocks[i]->iVddc);
+		for (auto i=0; i < odNSystemClocks.size(); i++) {
+		    setSystemClock(adapterIndex, i, odNSystemClocks[i]->iClock, odNSystemClocks[i]->iVddc);
 		}
 		for (auto i=0; i < memoryClocks.size(); i++) {
-		    setMemoryClock(adapterIndex, i, memoryClocks[i]->iClock, memoryClocks[i]->iVddc);
+		    setMemoryClock(adapterIndex, i, odNMemoryClocks[i]->iClock, odNMemoryClocks[i]->iVddc);
 		}
 		if (Options::i()->targetTemperature()) {
 			setFanControl(adapterIndex, Options::i()->targetTemperature());
