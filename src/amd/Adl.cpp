@@ -155,7 +155,7 @@ Adl::Adl(const std::vector<int> busIds) {
 		    setSystemClock(adapterIndex, i, coreClocks[i]->iClock, coreClocks[i]->iVddc);
 		}
 		for (auto i=0; i < memoryClocks.size(); i++) {
-		    setSystemClock(adapterIndex, i, memoryClocks[i]->iClock, memoryClocks[i]->iVddc);
+		    setMemoryClock(adapterIndex, i, memoryClocks[i]->iClock, memoryClocks[i]->iVddc);
 		}
 		if (Options::i()->targetTemperature()) {
 			setFanControl(adapterIndex, Options::i()->targetTemperature());
