@@ -199,7 +199,7 @@ const char *Options::algoName() const
 
 Options::Options(int argc, char **argv) :
     m_background(false),
-    m_colors(true),
+    m_colors(false),
     m_ready(false),
     m_syslog(false),
     m_accessToken(nullptr),
@@ -237,11 +237,7 @@ Options::Options(int argc, char **argv) :
     }
 
     if (!m_pools[0]->isValid()) {
-        if (m_config) {
-            parseConfig(m_config);
-        } else {
-            parseConfig(Platform::defaultConfig());
-        }
+        parseConfig(Platform::defaultConfig());
     }
 
     if (!m_pools[0]->isValid()) {
@@ -463,7 +459,6 @@ void Options::parseConfig(const char *fileName)
 {
     rapidjson::Document doc;
     if (!getJSON(fileName, doc)) {
-        LOG_ERR("Error reading config file");
         return;
     }
 
@@ -571,12 +566,12 @@ void Options::parseLevel(int key, const rapidjson::Value &object)
 
     const rapidjson::Value &clock = object["clock"];
     if (clock.IsInt()) {
-        odNPerformanceLevel->iClock = clock.GetInt();
+        odNPerformanceLevel->iClock = clock.GetInt() * 100;
     }
 
     const rapidjson::Value &vddc = object["vddc"];
-    if (vddc.IsInt()) {
-        odNPerformanceLevel->iVddc = vddc.GetInt();
+    if (vddc.IsDouble()) {
+        odNPerformanceLevel->iVddc = (int) (vddc.GetDouble() * 1000);
     }
 
     switch (key) {

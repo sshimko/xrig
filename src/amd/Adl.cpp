@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "Adl.h"
+#include "Options.h"
 
 
 // Memory allocation function
@@ -102,6 +103,7 @@ Adl::Adl(const std::vector<int> busIds) {
 	{
 		printf("Failed to get ADL function pointers\n");
 	}
+#endif // _WIN32
 
 	if (ADL_OK != ADL_Main_Control_Create(ADL_Main_Memory_Alloc, 1))
 	{
@@ -144,9 +146,21 @@ Adl::Adl(const std::vector<int> busIds) {
 		// fix underclocking for vega cards
 		setSystemClock(adapterIndex, 7, systemClocks[busId]->aLevels[7].iClock, systemClocks[busId]->aLevels[7].iVddc + 1);
 		setSystemClock(adapterIndex, 7, systemClocks[busId]->aLevels[7].iClock, systemClocks[busId]->aLevels[7].iVddc);
-	}
 
-#endif // _WIN32
+		// apply profile
+		const std::vector<ADLODNPerformanceLevelX2*> &coreClocks = Options::i()->coreClocks();
+		const std::vector<ADLODNPerformanceLevelX2*> &memoryClocks = Options::i()->memoryClocks();
+
+		for (auto i=0; i < coreClocks.size(); i++) {
+		    setSystemClock(adapterIndex, i, coreClocks[i]->iClock, coreClocks[i]->iVddc);
+		}
+		for (auto i=0; i < memoryClocks.size(); i++) {
+		    setSystemClock(adapterIndex, i, memoryClocks[i]->iClock, memoryClocks[i]->iVddc);
+		}
+		if (Options::i()->targetTemperature()) {
+			setFanControl(adapterIndex, Options::i()->targetTemperature());
+		}
+	}
 }
 
 Adl::~Adl()
