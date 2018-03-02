@@ -265,7 +265,7 @@ size_t InitOpenCLGpu(int index, cl_context opencl_ctx, GpuContext* ctx, const ch
     ctx->busId = getBusId(ctx->DeviceID);
     ctx->deviceName = getDeviceName(ctx->DeviceID);
 
-    LOG_INFO(Options::i()->colors() ? "\x1B[01;37m#%d\x1B[0m, GPU \x1B[01;37m#%zu\x1B[0m \x1B[01;32m%s\x1B[0m, intensity: \x1B[01;37m%zu\x1B[0m (%zu/%zu), cu: \x1B[01;37m%d"  : "#%d, GPU #%zu (%s), hashrate target: %zu, intensity: %zu (%zu/%zu), cu: %d",
+    LOG_INFO(Options::i()->colors() ? "\x1B[01;37m#%d\x1B[0m, GPU \x1B[01;37m#%zu\x1B[0m \x1B[01;32m%s\x1B[0m, intensity: \x1B[01;37m%zu\x1B[0m (%zu/%zu), cu: \x1B[01;37m%d"  : "#%d, GPU #%zu (%s), intensity: %zu (%zu/%zu), cu: %d",
         index, ctx->deviceIdx, ctx->deviceName.c_str(), ctx->rawIntensity, ctx->workSize, MaximumWorkSize, ctx->computeUnits);
 
 #   ifdef CL_VERSION_2_0
