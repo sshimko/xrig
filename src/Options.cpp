@@ -328,7 +328,6 @@ bool Options::parseArg(int key, const char *arg)
     case 'l': /* --log */
         free(m_log);
         m_log = strdup(arg);
-        m_colors = false;
         break;
 
     case 4001: /* --token */
@@ -419,12 +418,10 @@ bool Options::parseBoolean(int key, bool enable)
 
     case 'b': /* --background */
         m_background = enable;
-        m_colors = enable ? false : m_colors;
         break;
 
     case 's': /* --syslog */
         m_syslog = enable;
-        m_colors = enable ? false : m_colors;
         break;
 
     case 1006: /* --nicehash */
