@@ -125,7 +125,7 @@ void Platform::init()
 
 void Platform::release()
 {
-    delete [] m_defaultConfigName;
+    delete [] m_defaultConfig;
     delete [] m_versionString;
 }
 

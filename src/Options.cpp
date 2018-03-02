@@ -33,6 +33,7 @@
 #endif
 
 
+#include "amd/Adl.h"
 #include "amd/OclGPU.h"
 #include "Cpu.h"
 #include "log/Log.h"
@@ -67,19 +68,18 @@ Options:\n\
   -k, --keepalive           send keepalive to prevent timeout (needs pool support)\n\
       --intensity=N         thread intensity\n\
       --platform-index=N    OpenCL platform index\n\
-      --no-color            disable colored output\n\
+      --colors              enable colored output\n\
   -b, --background          run the miner in the background\n\
   -c, --config=FILE         load a JSON-format configuration file\n\
-  -l, --log-file=FILE       log all output to a file\n"
+  -l, --log=FILE            log all output to a file\n"
 # ifdef HAVE_SYSLOG_H
 "\
   -s, --syslog              use system log for output messages\n"
 # endif
 "\
       --nicehash            enable nicehash support\n\
-      --print-time=N        print hashrate report every N seconds\n\
       --port=N              port for the miner API\n\
-      --api-access-token=T  access token for API\n\
+      --token=T             access token for API\n\
       --id=ID               miner id (defaults to machine name)\n\
   -h, --help                display this help and exit\n\
   -v, --version             output version information and exit\n\
@@ -91,20 +91,19 @@ static char const short_options[] = "a:c:khbp:o:u:vl:s";
 
 static struct option const options[] = {
     { "algo",             1, nullptr, 'a'  },
-    { "api-access-token", 1, nullptr, 4001 },
+    { "token",            1, nullptr, 4001 },
     { "port",             1, nullptr, 4000 },
     { "id",               1, nullptr, 4002 },
     { "background",       0, nullptr, 'b'  },
+    { "colors",           0, nullptr, 2000 },
     { "config",           1, nullptr, 'c'  },
     { "help",             0, nullptr, 'h'  },
     { "keepalive",        0, nullptr ,'k'  },
-    { "log-file",         1, nullptr, 'l'  },
+    { "log",              1, nullptr, 'l'  },
     { "nicehash",         0, nullptr, 1006 },
-    { "no-color",         0, nullptr, 1002 },
     { "intensity",        1, nullptr, 1401 },
     { "platform-index",   1, nullptr, 1400 },
     { "pass",             1, nullptr, 'p'  },
-    { "print-time",       1, nullptr, 1007 },
     { "syslog",           0, nullptr, 's'  },
     { "url",              1, nullptr, 'o'  },
     { "user",             1, nullptr, 'u'  },
@@ -117,9 +116,8 @@ static struct option const config_options[] = {
     { "algo",             1, nullptr, 'a'  },
     { "background",       0, nullptr, 'b'  },
     { "colors",           0, nullptr, 2000 },
-    { "log-file",         1, nullptr, 'l'  },
-    { "platform-index",   1, nullptr, 1400 },
-    { "print-time",       1, nullptr, 1007 },
+    { "log",              1, nullptr, 'l'  },
+    { "platform_index",   1, nullptr, 1400 },
     { "syslog",           0, nullptr, 's'  },
     { 0, 0, 0, 0 }
 };
@@ -137,8 +135,15 @@ static struct option const pool_options[] = {
 
 static struct option const api_options[] = {
     { "port",          1, nullptr, 4000 },
-    { "access-token",  1, nullptr, 4001 },
+    { "token",         1, nullptr, 4001 },
     { "id",            1, nullptr, 4002 },
+    { 0, 0, 0, 0 }
+};
+
+static struct option const profile_options[] = {
+    { "core_clocks",          1, nullptr, 5000 },
+    { "memory_clocks",        1, nullptr, 5001 },
+    { "target_temperature",   1, nullptr, 5002 },
     { 0, 0, 0, 0 }
 };
 
@@ -189,17 +194,17 @@ Options::Options(int argc, char **argv) :
     m_syslog(false),
     m_accessToken(nullptr),
     m_id(nullptr),
-    m_configName(nullptr),
-    m_logFile(nullptr),
+    m_config(nullptr),
+    m_log(nullptr),
     m_algo(0),
     m_algoVariant(0),
     m_port(0),
     m_intensity(0),
     m_platformIndex(0),
-    m_printTime(60),
-    m_retries(5),
-    m_retryPause(5),
-    m_threads(0)
+    m_threads(0),
+    m_coreClocks(0),
+    m_memoryClocks(0),
+    m_targetTemperature(0)
 {
     m_pools.push_back(new Url());
 
@@ -222,7 +227,11 @@ Options::Options(int argc, char **argv) :
     }
 
     if (!m_pools[0]->isValid()) {
-        parseConfig(Platform::defaultConfigName());
+        if (m_config) {
+            parseConfig(m_config);
+        } else {
+            parseConfig(Platform::defaultConfig());
+        }
     }
 
     if (!m_pools[0]->isValid()) {
@@ -310,13 +319,13 @@ bool Options::parseArg(int key, const char *arg)
         m_pools.back()->setPassword(arg);
         break;
 
-    case 'l': /* --log-file */
-        free(m_logFile);
-        m_logFile = strdup(arg);
+    case 'l': /* --log */
+        free(m_log);
+        m_log = strdup(arg);
         m_colors = false;
         break;
 
-    case 4001: /* --access-token */
+    case 4001: /* --token */
         free(m_accessToken);
         m_accessToken = strdup(arg);
         break;
@@ -329,20 +338,16 @@ bool Options::parseArg(int key, const char *arg)
     case 1401: /* --intensity */
         return parseArg(key, strtol(arg, nullptr, 10));
 
-    case 1007: /* --print-time */
     case 4000: /* --port */
     case 1400: /* --platform-index */
         return parseArg(key, strtol(arg, nullptr, 10));
 
     case 'b':  /* --background */
+    case 2000: /* --colors */
     case 'k':  /* --keepalive */
     case 's':  /* --syslog */
-    case 1005: /* --safe */
     case 1006: /* --nicehash */
         return parseBoolean(key, true);
-
-    case 1002: /* --no-color */
-        return parseBoolean(key, false);
 
     case 'v': /* --version */
         showVersion();
@@ -368,15 +373,6 @@ bool Options::parseArg(int key, const char *arg)
 bool Options::parseArg(int key, uint64_t arg)
 {
     switch (key) {
-    case 1007: /* --print-time */
-        if (arg > 1000) {
-            showUsage(1);
-            return false;
-        }
-
-        m_printTime = (int) arg;
-        break;
-
     case 1400: /* --platform-index */
         m_platformIndex = (int) arg;
         break;
@@ -389,6 +385,10 @@ bool Options::parseArg(int key, uint64_t arg)
         if (arg <= 65536) {
             m_port = (int) arg;
         }
+        break;
+
+    case 5002: /* target_temperature */
+        m_targetTemperature = (int) arg;
         break;
 
     default:
@@ -416,15 +416,11 @@ bool Options::parseBoolean(int key, bool enable)
         m_colors = enable ? false : m_colors;
         break;
 
-    case 1002: /* --no-color */
-        m_colors = enable;
-        break;
-
     case 1006: /* --nicehash */
         m_pools.back()->setNicehash(enable);
         break;
 
-    case 2000: /* colors */
+    case 2000: /* --colors */
         m_colors = enable;
         break;
 
@@ -452,10 +448,11 @@ void Options::parseConfig(const char *fileName)
 {
     rapidjson::Document doc;
     if (!getJSON(fileName, doc)) {
+        LOG_ERR("Error reading config file");
         return;
     }
 
-    m_configName = strdup(fileName);
+    m_config = strdup(fileName);
 
     for (size_t i = 0; i < ARRAY_SIZE(config_options); i++) {
         parseJSON(&config_options[i], doc);
@@ -475,7 +472,7 @@ void Options::parseConfig(const char *fileName)
     }
 
     const rapidjson::Value &threads = doc["threads"];
-    if (pools.IsArray()) {
+    if (threads.IsArray()) {
         for (const rapidjson::Value &value : threads.GetArray()) {
             if (!value.IsObject()) {
                 continue;
@@ -490,6 +487,42 @@ void Options::parseConfig(const char *fileName)
         for (size_t i = 0; i < ARRAY_SIZE(api_options); i++) {
             parseJSON(&api_options[i], api);
         }
+    }
+
+    const rapidjson::Value &profile = doc["profile"];
+    if (profile.IsObject()) {
+        for (size_t i = 0; i < ARRAY_SIZE(profile_options); i++) {
+            parseProfile(&profile_options[i], profile);
+        }
+    }
+}
+
+
+void Options::parseProfile(const struct option *option, const rapidjson::Value &object)
+{
+    if (!option->name || !object.HasMember(option->name)) {
+        return;
+    }
+
+    const rapidjson::Value &value = object[option->name];
+
+    if (option->has_arg && value.IsArray()) {
+        for (const rapidjson::Value &level : value.GetArray()) {
+            if (!level.IsObject()) {
+                continue;
+            }
+
+            parseLevel(option->val, level);
+        }
+    }
+    else if (option->has_arg && value.IsString()) {
+        parseArg(option->val, value.GetString());
+    }
+    else if (option->has_arg && value.IsUint64()) {
+        parseArg(option->val, value.GetUint64());
+    }
+    else if (!option->has_arg && value.IsBool()) {
+        parseBoolean(option->val, value.IsTrue());
     }
 }
 
@@ -510,6 +543,35 @@ void Options::parseJSON(const struct option *option, const rapidjson::Value &obj
     }
     else if (!option->has_arg && value.IsBool()) {
         parseBoolean(option->val, value.IsTrue());
+    }
+}
+
+
+void Options::parseLevel(int key, const rapidjson::Value &object)
+{
+    ADLODNPerformanceLevelX2 *odNPerformanceLevel = new ADLODNPerformanceLevelX2();
+
+    const rapidjson::Value &clock = object["clock"];
+    if (clock.IsInt()) {
+        odNPerformanceLevel->iClock = clock.GetInt();
+    }
+
+    const rapidjson::Value &vddc = object["vddc"];
+    if (vddc.IsInt()) {
+        odNPerformanceLevel->iVddc = vddc.GetInt();
+    }
+
+    switch (key) {
+    case 5000: /* core_clocks */
+        m_coreClocks.push_back(odNPerformanceLevel);
+        break;
+
+    case 5001: /* memory_clocks */
+        m_memoryClocks.push_back(odNPerformanceLevel);
+        break;
+
+    default:
+        break;
     }
 }
 
@@ -536,7 +598,6 @@ void Options::parseThread(const rapidjson::Value &object)
 
     m_threads.push_back(thread);
 }
-
 
 
 void Options::showUsage(int status) const

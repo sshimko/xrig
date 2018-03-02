@@ -28,7 +28,7 @@
 class Platform
 {
 public:
-    static const char *defaultConfigName();
+    static const char *defaultConfig();
     static void init();
     static void release();
     static void setProcessPriority(int priority);
@@ -38,7 +38,7 @@ public:
     static inline const char *versionString() { return m_versionString; }
 
 private:
-    static char *m_defaultConfigName;
+    static char *m_defaultConfig;
     static char *m_versionString;
 };
 

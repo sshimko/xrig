@@ -28,14 +28,13 @@ GPU mining based on [Wolf9466](https://github.com/OhGodAPet) and [psychocrypt](h
   -k, --keepalive           send keepalive to prevent timeout (needs pool support)
       --intensity=N         thread intensity
       --platform-index=N    OpenCL platform index
-      --no-color            disable colored output
+      --colors              enable colored output
   -b, --background          run the miner in the background
   -c, --config=FILE         load a JSON-format configuration file
-  -l, --log-file=FILE       log all output to a file
+  -l, --log=FILE            log all output to a file
       --nicehash            enable nicehash support
-      --print-time=N        print hashrate report every N seconds
       --port=N              port for the miner API
-      --api-access-token=T  access token for API
+      --token=T             access token for API
       --id=ID               miner id (defaults to machine name)
   -h, --help                display this help and exit
   -v, --version             output version information and exit
@@ -46,8 +45,8 @@ Sample config for an array of Vega's:
 ```json
 {
     "algo": "cryptonight",
-    "platform-index": 0,
     "intensity": 1932,
+    "platform_index": 0,
     "pools": [
         {
             "url": "pool.monero.hashvault.pro:5555",

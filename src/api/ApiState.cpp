@@ -185,15 +185,15 @@ void ApiState::getGpus(rapidjson::Document &doc) const
         const ADLODNPerformanceLevelsX2* odNSystemClocks = Adl::i()->getSystemClocks(handles[0]->ctx()->busId);
         const ADLODNPerformanceLevelsX2* odNMemoryClocks = Adl::i()->getMemoryClocks(handles[0]->ctx()->busId);
         rapidjson::Value profile(rapidjson::kObjectType);
-        rapidjson::Value core_clock(rapidjson::kArrayType);
-        rapidjson::Value memory_clock(rapidjson::kArrayType);
+        rapidjson::Value core_clocks(rapidjson::kArrayType);
+        rapidjson::Value memory_clocks(rapidjson::kArrayType);
 
         for (int i=0 ;i <ADL_PERFORMANCE_LEVELS; i++) {
             if (odNSystemClocks->aLevels[i].iEnabled) {
                 rapidjson::Value level(rapidjson::kObjectType);
                 level.AddMember("clock", odNSystemClocks->aLevels[i].iClock, allocator);
                 level.AddMember("vddc", odNSystemClocks->aLevels[i].iVddc, allocator);
-                core_clock.PushBack(level, allocator);
+                core_clocks.PushBack(level, allocator);
             }
         }
 
@@ -202,12 +202,12 @@ void ApiState::getGpus(rapidjson::Document &doc) const
                 rapidjson::Value level(rapidjson::kObjectType);
                 level.AddMember("clock", odNMemoryClocks->aLevels[i].iClock, allocator);
                 level.AddMember("vddc", odNMemoryClocks->aLevels[i].iVddc, allocator);
-                memory_clock.PushBack(level, allocator);
+                memory_clocks.PushBack(level, allocator);
             }
         }
 
-        profile.AddMember("core_clock", core_clock, allocator);
-        profile.AddMember("memory_clock", memory_clock, allocator);
+        profile.AddMember("core_clocks", core_clocks, allocator);
+        profile.AddMember("memory_clocks", memory_clocks, allocator);
         profile.AddMember("target_temperature", odNFanControl->iTargetTemperature, allocator);
 
         gpu.AddMember("profile", profile, allocator);
