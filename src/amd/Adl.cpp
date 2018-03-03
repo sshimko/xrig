@@ -307,6 +307,8 @@ void Adl::tick() {
     	int busId = map.first;
     	int adapterIndex = map.second;
 
+		systemClocks[busId] = OverdriveN_SystemClocksX2_Get(adapterIndex);
+		memoryClocks[busId] = OverdriveN_MemoryClocksX2_Get(adapterIndex);
 		fanControl[busId] = OverdriveN_FanControl_Get(adapterIndex);
 		performanceStatus[busId] = OverdriveN_PerformanceStatus_Get(adapterIndex);
 		temperature[busId] = OverdriveN_Temperature_Get(adapterIndex);
