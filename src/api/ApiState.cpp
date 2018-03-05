@@ -192,6 +192,8 @@ void ApiState::getGpus(rapidjson::Document &doc) const
         const ADLODNFanControl* odNFanControl = Adl::i()->getFanControl(handles[0]->ctx()->busId);
         gpu.AddMember("fan_speed", odNFanControl->iCurrentFanSpeed, allocator);
 
+        const ADLODNPowerLimitSetting* odNPowerControl = Adl::i()->getPowerLimit(handles[0]->ctx()->busId);
+
         const ADLODNPerformanceLevelsX2* odNSystemClocks = Adl::i()->getSystemClocks(handles[0]->ctx()->busId);
         const ADLODNPerformanceLevelsX2* odNMemoryClocks = Adl::i()->getMemoryClocks(handles[0]->ctx()->busId);
         rapidjson::Value profile(rapidjson::kObjectType);
@@ -219,6 +221,7 @@ void ApiState::getGpus(rapidjson::Document &doc) const
         profile.AddMember("system", system, allocator);
         profile.AddMember("memory", memory, allocator);
         profile.AddMember("target_temperature", odNFanControl->iTargetTemperature, allocator);
+        profile.AddMember("power_limit", odNPowerControl->iTDPLimit, allocator);
 
         gpu.AddMember("profile", profile, allocator);
 
