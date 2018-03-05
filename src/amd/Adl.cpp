@@ -142,6 +142,7 @@ Adl::Adl(const std::vector<int> busIds) {
 		fanControl[busId] = OverdriveN_FanControl_Get(adapterIndex);
 		performanceStatus[busId] = OverdriveN_PerformanceStatus_Get(adapterIndex);
 		temperature[busId] = OverdriveN_Temperature_Get(adapterIndex);
+		powerLimit[busId] = OverdriveN_PowerLimit_Get(adapterIndex);
 
 		// fix underclocking for vega cards
 		if (systemClocks[busId]->aLevels[7].iVddc > 1000) {
@@ -163,6 +164,9 @@ Adl::Adl(const std::vector<int> busIds) {
 		}
 		if (Options::i()->targetTemperature()) {
 			setFanControl(adapterIndex, Options::i()->targetTemperature());
+		}
+		if (Options::i()->powerLimit() != 0) {
+			setPowerLimit(adapterIndex, Options::i()->powerLimit());
 		}
 	}
 }
@@ -245,6 +249,21 @@ ADLODNPerformanceStatus* Adl::OverdriveN_PerformanceStatus_Get(int adapterIndex)
 	return odNPerformanceStatus;
 }
 
+ADLODNPowerLimitSetting* Adl::OverdriveN_PowerLimit_Get(int adapterIndex) {
+	ADLODNPowerLimitSetting *odNPowerControl;
+
+	int size = sizeof(ADLODNPowerLimitSetting);
+	void* odNPowerControlBuffer = new char[size];
+	memset(odNPowerControlBuffer, 0, size);
+	odNPowerControl = (ADLODNPowerLimitSetting*)odNPowerControlBuffer;
+
+	if (ADL_OK != ADL2_OverdriveN_PowerLimit_Get(context, adapterIndex, odNPowerControl)) {
+		printf("ADL2_OverdriveN_PowerLimit_Get failed. adapterIndex: %d\n", adapterIndex);
+	}
+
+	return odNPowerControl;
+}
+
 int Adl::OverdriveN_Temperature_Get(int adapterIndex) {
 	int temp = 0;
 
@@ -291,6 +310,17 @@ void Adl::setMemoryClock(int adapterIndex, int level, int clock, int vddc) {
 	}
 }
 
+void Adl::setPowerLimit(int adapterIndex, int powerLimit) {
+	ADLODNPowerLimitSetting* odNPowerControl = OverdriveN_PowerLimit_Get(adapterIndex);
+
+	odNPowerControl->iTDPLimit = powerLimit;
+	odNPowerControl->iMode = ADLODNControlType::ODNControlType_Manual;
+
+	if (ADL_OK != ADL2_OverdriveN_PowerLimit_Set(context, adapterIndex, odNPowerControl)) {
+		printf("ADL2_OverdriveN_PowerLimit_Set failed. adapterIndex: %d\n", adapterIndex);
+	}
+}
+
 void Adl::setFanControl(int adapterIndex, int targetTemp) {
 	ADLODNFanControl* odNFanControl = OverdriveN_FanControl_Get(adapterIndex);
 
@@ -298,7 +328,7 @@ void Adl::setFanControl(int adapterIndex, int targetTemp) {
 	odNFanControl->iMode = ADLODNControlType::ODNControlType_Manual;
 
 	if (ADL_OK != ADL2_OverdriveN_FanControl_Set(context, adapterIndex, odNFanControl)) {
-		printf("ADL2_OverdriveN_FanControl_Set failed\n");
+		printf("ADL2_OverdriveN_FanControl_Set failed. adapterIndex: %d\n", adapterIndex);
 	}
 }
 
@@ -312,6 +342,7 @@ void Adl::tick() {
 		fanControl[busId] = OverdriveN_FanControl_Get(adapterIndex);
 		performanceStatus[busId] = OverdriveN_PerformanceStatus_Get(adapterIndex);
 		temperature[busId] = OverdriveN_Temperature_Get(adapterIndex);
+		powerLimit[busId] = OverdriveN_PowerLimit_Get(adapterIndex);
 	}
 }
 

@@ -28,6 +28,7 @@ public:
 	inline const ADLODNPerformanceLevelsX2* getMemoryClocks(int busId) { return memoryClocks[busId]; };
 	inline const ADLODNFanControl* getFanControl(int busId) { return fanControl[busId]; };
 	inline const ADLODNPerformanceStatus* getPerformanceStatus(int busId) { return performanceStatus[busId]; };
+	inline const ADLODNPowerLimitSetting* getPowerLimit(int busId) { return powerLimit[busId]; };
 	inline int getTemperature(int busId) { return temperature[busId]; };
 	inline int getAdapterIndex(int busId) { return adapters[busId]; };
 
@@ -102,16 +103,19 @@ private:
 	std::map<int, ADLODNPerformanceLevelsX2*> memoryClocks;
 	std::map<int, ADLODNFanControl*> fanControl;
 	std::map<int, ADLODNPerformanceStatus*> performanceStatus;
+	std::map<int, ADLODNPowerLimitSetting*> powerLimit;
 	std::map<int, int> temperature;
 
 	ADLODNPerformanceLevelsX2* OverdriveN_SystemClocksX2_Get(int adapterIndex);
 	ADLODNPerformanceLevelsX2* OverdriveN_MemoryClocksX2_Get(int adapterIndex);
 	ADLODNFanControl* OverdriveN_FanControl_Get(int adapterIndex);
 	ADLODNPerformanceStatus* OverdriveN_PerformanceStatus_Get(int adapterIndex);
+	ADLODNPowerLimitSetting* OverdriveN_PowerLimit_Get(int adapterIndex);
 	int OverdriveN_Temperature_Get(int adapterIndex);
 
 	void setSystemClock(int adapterIndex, int level, int clock, int vddc);
 	void setMemoryClock(int adapterIndex, int level, int clock, int vddc);
+	void setPowerLimit(int adapterIndex, int powerLimit);
 	void setFanControl(int adapterIndex, int targetTemp);
 };
 

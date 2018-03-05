@@ -148,9 +148,10 @@ static struct option const api_options[] = {
 };
 
 static struct option const profile_options[] = {
-    { "system",                 1, nullptr, 5000 },
+    { "system",               1, nullptr, 5000 },
     { "memory",               1, nullptr, 5001 },
     { "target_temperature",   1, nullptr, 5002 },
+    { "power_limit",          1, nullptr, 5003 },
     { 0, 0, 0, 0 }
 };
 
@@ -211,7 +212,8 @@ Options::Options(int argc, char **argv) :
     m_threads(0),
     m_systemClocks(0),
     m_memoryClocks(0),
-    m_targetTemperature(0)
+    m_targetTemperature(0),
+    m_powerLimit(0)
 {
     m_pools.push_back(new Url());
 
@@ -395,6 +397,10 @@ bool Options::parseArg(int key, uint64_t arg)
 
     case 5002: /* profile.target_temperature */
         m_targetTemperature = (int) arg;
+        break;
+
+    case 5003: /* profile.power_limit */
+        m_powerLimit = (int) arg;
         break;
 
     default:
