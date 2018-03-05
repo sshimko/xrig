@@ -63,20 +63,20 @@ Sample config for an array of Vega's:
     },
     "profile": {
         "system": [
-            {"clock": 852,  "vddc": 0.800},
-            {"clock": 991,  "vddc": 0.900},
-            {"clock": 1138, "vddc": 0.950},
-            {"clock": 1269, "vddc": 1.000},
-            {"clock": 1312, "vddc": 1.050},
-            {"clock": 1474, "vddc": 1.100},
-            {"clock": 1538, "vddc": 1.150},
-            {"clock": 1590, "vddc": 1.200}
+            {"clock": 852,  "vddc": 0.8},
+            {"clock": 991,  "vddc": 0.9},
+            {"clock": 1138, "vddc": 0.95},
+            {"clock": 1269, "vddc": 1.0},
+            {"clock": 1312, "vddc": 1.05},
+            {"clock": 1474, "vddc": 1.1},
+            {"clock": 1538, "vddc": 1.15},
+            {"clock": 1590, "vddc": 1.2}
         ],
         "memory": [
-            {"clock": 167, "vddc": 0.800},
-            {"clock": 500, "vddc": 0.800},
-            {"clock": 700, "vddc": 0.900},
-            {"clock": 800, "vddc": 0.950}
+            {"clock": 167, "vddc": 0.8},
+            {"clock": 500, "vddc": 0.8},
+            {"clock": 700, "vddc": 0.9},
+            {"clock": 950, "vddc": 0.9}
         ],
         "target_temperature": 75,
         "power_limit": 0
@@ -137,8 +137,8 @@ Example output:
                     {"clock": 1269, "vddc": 1.0},
                     {"clock": 1312, "vddc": 1.05},
                     {"clock": 1474, "vddc": 1.1},
-                    {"clock": 1350, "vddc": 0.8},
-                    {"clock": 1350, "vddc": 0.8}
+                    {"clock": 1538, "vddc": 1.15},
+                    {"clock": 1590, "vddc": 1.2}
                 ],
                 "memory": [
                     {"clock": 167, "vddc": 0.8},
@@ -151,13 +151,13 @@ Example output:
             },
             "threads": [
                 {
-                    "intensity": 1928,
+                    "intensity": 1932,
                     "hashrate_10s": 853.34,
                     "hashrate_60s": 855.62,
                     "hashrate_15m": 854.76
                 },
                 {
-                    "intensity": 1929,
+                    "intensity": 1932,
                     "hashrate_10s": 863.47,
                     "hashrate_60s": 858.88,
                     "hashrate_15m": 855.3
