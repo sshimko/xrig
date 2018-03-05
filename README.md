@@ -16,7 +16,7 @@ GPU mining based on [Wolf9466](https://github.com/OhGodAPet) and [psychocrypt](h
 * OverdriveN capabilities (set your under/overclock profile in config.json - replaces Wattman and OverdriveNTool)
 * Fixes the different shenanigans of mining on the Vega's (e.g. the "underclock toggle" and gpu reset)
 * Windows and Linux support
-* Pre-compiled binary has 1% dev donation with the first donation at boot (rather than after x minutes)
+* Pre-compiled binary has 1% dev donation, donation starts at boot rather than after x minutes
 
 ## Work-in-progress
 * Option(s) for automatic fine-tuning of each individual card during mining. This should maximize the utilization of each card and increase the hashrate over time
