@@ -96,6 +96,7 @@ private:
     bool getJSON(const char *fileName, rapidjson::Document &doc);
     bool parseArg(int key, const char *arg);
     bool parseArg(int key, uint64_t arg);
+	bool parseArg(int key, int64_t arg);
     bool parseBoolean(int key, bool enable);
     Url *parseUrl(const char *arg) const;
     void parseConfig(const char *fileName);

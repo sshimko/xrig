@@ -330,11 +330,11 @@ bool Options::parseArg(int key, const char *arg)
         break;
 
     case 1401: /* --intensity */
-        return parseArg(key, strtol(arg, nullptr, 10));
+        return parseArg(key, (uint64_t) strtol(arg, nullptr, 10));
 
     case 4000: /* --port */
     case 1400: /* --platform-index */
-        return parseArg(key, strtol(arg, nullptr, 10));
+        return parseArg(key, (uint64_t) strtol(arg, nullptr, 10));
 
     case 'b':  /* --background */
     case 'k':  /* --keepalive */
@@ -384,15 +384,26 @@ bool Options::parseArg(int key, uint64_t arg)
         m_targetTemperature = (int) arg;
         break;
 
-    case 5003: /* profile.power_limit */
-        m_powerLimit = (int) arg;
-        break;
-
     default:
         break;
     }
 
     return true;
+}
+
+
+bool Options::parseArg(int key, int64_t arg)
+{
+	switch (key) {
+	case 5003: /* profile.power_limit */
+		m_powerLimit = (int)arg;
+		break;
+		
+	default:
+		break;
+	}
+
+	return true;
 }
 
 
@@ -510,7 +521,10 @@ void Options::parseProfile(const struct option *option, const rapidjson::Value &
     }
     else if (option->has_arg && value.IsUint64()) {
         parseArg(option->val, value.GetUint64());
-    }
+	}
+	else if (option->has_arg && value.IsInt64()) {
+		parseArg(option->val, value.GetInt64());
+	}
     else if (!option->has_arg && value.IsBool()) {
         parseBoolean(option->val, value.IsTrue());
     }
