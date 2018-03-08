@@ -46,7 +46,7 @@ GPU mining based on [Wolf9466](https://github.com/OhGodAPet) and [psychocrypt](h
 
 ### Config file
 Sample config for an array of Vega's:
-```json
+```js
 {
     "algo": "cryptonight",
     "intensity": 1932,
@@ -86,7 +86,7 @@ Sample config for an array of Vega's:
 Note: to change all P-states you need to have a soft powerplaytable for all cards in your registry.
 
 You can also configure the threads manually as usual:
-```json
+```js
 {
     "algo": "cryptonight",
     "platform_index": 0,
@@ -104,32 +104,34 @@ You can also configure the threads manually as usual:
         {"index": 0, "intensity": 1932},
         {"index": 0, "intensity": 1932}
     ],
-    "profile": ...
+    "profile": {
+        // ...
+    }
 }
 ```
 
 ### Rich API in JSON format
 
 Example output:
-```json
+```js
 {
     "id": "DESKTOP-TEST",
     "version": "Xrig/0.8.0 (Windows NT 10.0; Win64; x64) libuv/1.14.1 OpenCL/2.0 libmicrohttpd/0.9.58 msvc/2017",
     "algo": "cryptonight",
     "uptime": 14729.0,
-    "hashrate_10s": 10654.67,
-    "hashrate_60s": 10656.87,
-    "hashrate_15m": 10651.38,
-    "hashrate_max": 11032.48,
+    "hashrate_10s": 11454.67,
+    "hashrate_60s": 11456.87,
+    "hashrate_15m": 11451.38,
+    "hashrate_max": 11482.48,
     "gpus": [
         {
-            "bus_id": 3,
-            "adapter_index": 29,
+            "bus_id": 9,
+            "adapter_index": 23,
             "device_name": "687F:C3",
-            "temperature": 75,
-            "core_clock": 1269,
+            "temperature": 74,
+            "core_clock": 1350,
             "memory_clock": 950,
-            "fan_speed": 1718,
+            "fan_speed": 1934,
             "profile": {
                 "system": [
                     {"clock": 852,  "vddc": 0.9},
@@ -148,44 +150,41 @@ Example output:
                     {"clock": 950, "vddc": 0.9}
                 ],
                 "target_temperature": 75,
-                "power_limit": -10
+                "power_limit": 0
             },
             "threads": [
                 {
-                    "intensity": 1932,
-                    "hashrate_10s": 853.34,
-                    "hashrate_60s": 855.62,
-                    "hashrate_15m": 854.76
+                    "intensity": 1928,
+                    "hashrate_10s": 951.86,
+                    "hashrate_60s": 951.31,
+                    "hashrate_15m": 949.24
                 },
                 {
-                    "intensity": 1932,
-                    "hashrate_10s": 863.47,
-                    "hashrate_60s": 858.88,
-                    "hashrate_15m": 855.3
+                    "intensity": 1928,
+                    "hashrate_10s": 951.39,
+                    "hashrate_60s": 952.29,
+                    "hashrate_15m": 951.5
                 }
             ],
-            "hashrate_10s": 1716.81,
-            "hashrate_60s": 1714.5,
-            "hashrate_15m": 1710.06
+            "hashrate_10s": 1903.25,
+            "hashrate_60s": 1903.6,
+            "hashrate_15m": 1900.74
         },
         {
-            ...
+            // ...
         },
         {
-            ...
+            // ...
         },
         {
-            ...
+            // ...
         },
         {
-            ...
+            // ...
         },
         {
-            ...
-        },
-        {
-            ...
-        },
+            // ...
+        }
     ],
     "results": {
         "diff_current": 526795,
@@ -194,7 +193,7 @@ Example output:
         "avg_time": 48,
         "hashes_total": 152108212,
         "best": [
-            ...
+            // ...
         ],
         "error_log": []
     },
