@@ -63,14 +63,14 @@ Sample config for an array of Vega's:
     },
     "profile": {
         "system": [
-            {"clock": 852,  "vddc": 0.8},
+            {"clock": 852,  "vddc": 0.9},
             {"clock": 991,  "vddc": 0.9},
-            {"clock": 1138, "vddc": 0.95},
-            {"clock": 1269, "vddc": 1.0},
-            {"clock": 1312, "vddc": 1.05},
-            {"clock": 1474, "vddc": 1.1},
-            {"clock": 1538, "vddc": 1.15},
-            {"clock": 1590, "vddc": 1.2}
+            {"clock": 1084, "vddc": 0.9},
+            {"clock": 1138, "vddc": 0.9},
+            {"clock": 1150, "vddc": 0.9},
+            {"clock": 1202, "vddc": 0.9},
+            {"clock": 1350, "vddc": 0.8},
+            {"clock": 1350, "vddc": 0.8}
         ],
         "memory": [
             {"clock": 167, "vddc": 0.8},
@@ -131,14 +131,14 @@ Example output:
             "fan_speed": 1718,
             "profile": {
                 "system": [
-                    {"clock": 852,  "vddc": 0.8},
+                    {"clock": 852,  "vddc": 0.9},
                     {"clock": 991,  "vddc": 0.9},
-                    {"clock": 1138, "vddc": 0.95},
-                    {"clock": 1269, "vddc": 1.0},
-                    {"clock": 1312, "vddc": 1.05},
-                    {"clock": 1474, "vddc": 1.1},
-                    {"clock": 1538, "vddc": 1.15},
-                    {"clock": 1590, "vddc": 1.2}
+                    {"clock": 1084, "vddc": 0.9},
+                    {"clock": 1138, "vddc": 0.9},
+                    {"clock": 1150, "vddc": 0.9},
+                    {"clock": 1202, "vddc": 0.9},
+                    {"clock": 1350, "vddc": 0.8},
+                    {"clock": 1350, "vddc": 0.8}
                 ],
                 "memory": [
                     {"clock": 167, "vddc": 0.8},
