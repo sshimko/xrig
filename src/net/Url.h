@@ -60,6 +60,7 @@ public:
     void setPassword(const char *password);
     void setUser(const char *user);
     void setVariant(int variant);
+    void applyExceptions();
 
     bool operator==(const Url &other) const;
     Url &operator=(const Url *other);

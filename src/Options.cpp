@@ -247,6 +247,7 @@ Options::Options(int argc, char **argv) :
 
     for (Url *url : m_pools) {
         url->setAlgo(m_algo);
+        url->applyExceptions();
     }
 
     m_ready = true;

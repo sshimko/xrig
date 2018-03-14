@@ -153,11 +153,23 @@ const char *Url::url() const
 
 void Url::setAlgo(int algo)
 {
+    switch (algo) {
+    case Options::ALGO_CRYPTONIGHT:
+    case Options::ALGO_CRYPTONIGHT_LITE:
+        m_algo = algo;
+        break;
+
+    default:
+        break;
+    }
+}
+
+
+void Url::applyExceptions()
+{
     if (!isValid()) {
         return;
     }
-
-    m_algo = algo;
 
     if (strstr(m_host, ".nicehash.com")) {
         m_keepAlive = false;
@@ -194,16 +206,16 @@ void Url::setUser(const char *user)
 
 void Url::setVariant(int variant)
 {
-   switch (variant) {
-   case Options::VARIANT_AUTO:
-   case Options::VARIANT_NONE:
-   case Options::VARIANT_V1:
-       m_variant = variant;
-       break;
+    switch (variant) {
+    case Options::VARIANT_AUTO:
+    case Options::VARIANT_NONE:
+    case Options::VARIANT_V1:
+        m_variant = variant;
+        break;
 
-   default:
-       break;
-   }
+    default:
+        break;
+    }
 }
 
 
