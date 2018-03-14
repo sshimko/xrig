@@ -18,6 +18,7 @@ platform: x64
 environment:
   global:
     OPENCL_ROOT: "%APPVEYOR_BUILD_FOLDER%\\opencl"
+    OPENCL_LIBRARY: "%APPVEYOR_BUILD_FOLDER%\\opencl\\lib\\bin"
     OPENCL_REGISTRY: "https://www.khronos.org/registry/cl"
 
 init:
@@ -46,6 +47,7 @@ install:
   - ps: mkdir include/CL
   - ps: mv ./OpenCL-Headers/opencl20/CL/* include/CL
   - ps: popd
+  - ps: dir
 
 before_build:
   - generate_sln.bat
