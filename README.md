@@ -29,6 +29,7 @@ GPU mining based on [Wolf9466](https://github.com/OhGodAPet) and [psychocrypt](h
   -o, --url=URL             URL of mining server
   -u, --user=USERNAME       username for mining server
   -p, --pass=PASSWORD       password for mining server
+      --variant=N           PoW variant (defaults to -1 = automatic)
   -k, --keepalive           send keepalive to prevent timeout (needs pool support)
       --intensity=N         thread intensity
       --platform-index=N    OpenCL platform index

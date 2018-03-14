@@ -70,7 +70,7 @@ Options:\n\
   -o, --url=URL             URL of mining server\n\
   -u, --user=USERNAME       username for mining server\n\
   -p, --pass=PASSWORD       password for mining server\n\
-      --variant             algorithm PoW variant\n\
+      --variant=N           PoW variant (defaults to -1 = automatic)\n\
   -k, --keepalive           send keepalive to prevent timeout (needs pool support)\n\
       --intensity=N         thread intensity\n\
       --platform-index=N    OpenCL platform index\n\
