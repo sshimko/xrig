@@ -3,6 +3,9 @@ set configuration=MinSizeRel
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 cd %project_dir%
 msbuild build\xrig.sln /p:Configuration=%configuration%
+IF %ERRORLEVEL% NEQ 0 (
+	EXIT /B %ERRORLEVEL%
+)
 xcopy libuv-1.14.1-x64\libuv.dll build\%configuration%\ /Y
 xcopy devcon\devcon.exe build\%configuration%\ /Y
 (
