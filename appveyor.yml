@@ -34,7 +34,7 @@ install:
   # The cmake build files expect a directory called inc
   - ps: mkdir inc/CL
   - git clone --depth 1 https://github.com/KhronosGroup/OpenCL-Headers.git
-  - ps: mv ./OpenCL-Headers/opencl20/CL/* inc/CL
+  - ps: mv ./OpenCL-Headers/opencl22/CL/* inc/CL
   - ps: wget $opencl_registry/api/2.1/cl.hpp -OutFile inc/CL/cl.hpp
   # Create the static import lib in a directory called lib, so findopencl() will find it
   - ps: mkdir lib
@@ -42,6 +42,8 @@ install:
   - cmake -G "NMake Makefiles" ..
   - nmake
   - ps: popd
+  # Switch to OpenCL 2.0 headers
+  - ps: mv ./OpenCL-Headers/opencl20/CL/* inc/CL
   # Rename the inc directory to include, so FindOpencl() will find it
   - ps: ren inc include
   - ps: popd
