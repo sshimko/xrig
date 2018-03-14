@@ -18,7 +18,6 @@ platform: x64
 environment:
   global:
     OPENCL_ROOT: "%APPVEYOR_BUILD_FOLDER%\\opencl"
-    OPENCL_LIBRARY: "%APPVEYOR_BUILD_FOLDER%\\opencl\\lib\\bin"
     OPENCL_REGISTRY: "https://www.khronos.org/registry/cl"
 
 init:
@@ -37,17 +36,17 @@ install:
   - git clone --depth 1 https://github.com/KhronosGroup/OpenCL-Headers.git
   - ps: mv ./OpenCL-Headers/opencl22/CL/* inc/CL
   - ps: wget $opencl_registry/api/2.1/cl.hpp -OutFile inc/CL/cl.hpp
-  # Create the static import lib in a directory called lib, so findopencl() will find it
+  # Create the static import lib in a directory called lib, so FindOpencl() will find it
   - ps: mkdir lib
   - ps: pushd lib
   - cmake -G "NMake Makefiles" ..
   - nmake
+  - ps: dir
   - ps: popd
   # Create include directory with OpenCL 2.0 headers, so FindOpencl() will find it
   - ps: mkdir include/CL
   - ps: mv ./OpenCL-Headers/opencl20/CL/* include/CL
   - ps: popd
-  - ps: dir
 
 before_build:
   - generate_sln.bat

@@ -29,7 +29,8 @@ if (CMAKE_SIZEOF_VOID_P EQUAL 8)
         "AMD APP/lib/x86_64"
         lib/x86_64
         lib/x64
-        OpenCL/common/lib/x64)
+        OpenCL/common/lib/x64
+        lib/bin)
 else()
     find_library(OpenCL_LIBRARY
     NAMES 
@@ -44,7 +45,8 @@ else()
     PATH_SUFFIXES
         "AMD APP/lib/x86"
         lib/x86
-        OpenCL/common/lib/x86)
+        OpenCL/common/lib/x86
+        lib/bin)
 endif()
 
 # find package will use the previews searched path variables
