@@ -1,0 +1,55 @@
+# Inspired by https://github.com/clMathLibraries/clBLAS/blob/master/appveyor.yml
+version: 1.0.{build}
+
+branches:
+  only:
+    - master
+
+skip_tags: true
+
+shallow_clone: true
+
+image: Visual Studio 2017
+
+configuration: Release
+
+platform: x64
+
+environment:
+  global:
+    OPENCL_ROOT: "%APPVEYOR_BUILD_FOLDER%\\opencl"
+    OPENCL_REGISTRY: "https://www.khronos.org/registry/cl"
+
+install:
+  - ps: mkdir $env:OPENCL_ROOT
+  - ps: pushd $env:OPENCL_ROOT
+  - ps: $opencl_registry = $env:OPENCL_REGISTRY
+  # This downloads the source to the Khronos ICD library
+  - git clone --depth 1 https://github.com/KhronosGroup/OpenCL-ICD-Loader.git
+  - ps: mv ./OpenCL-ICD-Loader/* .
+  # This downloads all the opencl header files
+  # The cmake build files expect a directory called inc
+  - ps: mkdir inc/CL
+  - git clone --depth 1 https://github.com/KhronosGroup/OpenCL-Headers.git inc/CL
+  - ps: wget $opencl_registry/api/2.1/cl.hpp -OutFile inc/CL/cl.hpp
+  # - ps: dir; if( $lastexitcode -eq 0 ){ dir include/CL } else { Write-Output boom }
+  # Create the static import lib in a directory called lib, so findopencl() will find it
+  - ps: mkdir lib
+  - ps: pushd lib
+  - cmake -G "NMake Makefiles" ..
+  - nmake
+  - ps: popd
+  # Switch to OpenCL 2.0 headers
+  - ps: pushd inc/CL
+  - git fetch origin opencl20:opencl20
+  - git checkout opencl20
+  - ps: popd
+  # Rename the inc directory to include, so FindOpencl() will find it
+  - ps: ren inc include
+  - ps: popd
+
+before_build:
+  - ps: generate_sln.bat
+
+build_script:
+  - ps: build.bat
