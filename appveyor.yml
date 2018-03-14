@@ -1,5 +1,5 @@
 # Inspired by https://github.com/clMathLibraries/clBLAS/blob/master/appveyor.yml
-version: {build}
+version: Build {build}
 
 branches:
   only:
