@@ -48,8 +48,7 @@ install:
   - ps: popd
 
 before_build:
-  - ps: dir
-  - ps: generate_sln.bat
+  - generate_sln.bat
 
 build_script:
-  - ps: build.bat
+  - build.bat
