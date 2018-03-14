@@ -1,3 +1,4 @@
+# Inspired by https://github.com/clMathLibraries/clBLAS/blob/master/appveyor.yml
 version: 1.0.{build}
 
 branches:
@@ -47,6 +48,11 @@ install:
   - ps: ren inc include
   - ps: popd
 
-build_script:
+build:
+  project: %APPVEYOR_BUILD_FOLDER%\\build\\xrig.sln
+
+before_build:
   - ps: generate_sln.bat
+
+build_script:
   - ps: build.bat
