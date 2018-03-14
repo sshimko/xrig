@@ -26,6 +26,7 @@
 
 
 #include <stdint.h>
+#include "Options.h"
 
 
 class Url
@@ -37,7 +38,7 @@ public:
 
     Url();
     Url(const char *url);
-    Url(const char *host, uint16_t port, const char *user = nullptr, const char *password = nullptr, bool keepAlive = false, bool nicehash = false, int variant = -1);
+    Url(const char *host, uint16_t port, const char *user = nullptr, const char *password = nullptr, bool keepAlive = false, bool nicehash = false, int variant = Options::VARIANT_AUTO);
     ~Url();
 
     inline bool isKeepAlive() const          { return m_keepAlive; }

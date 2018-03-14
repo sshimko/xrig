@@ -31,6 +31,7 @@
 
 #include "align.h"
 #include "net/JobId.h"
+#include "Options.h"
 
 
 class Job
@@ -54,7 +55,7 @@ public:
     inline const JobId &id() const     { return m_id; }
     inline int poolId() const              { return m_poolId; }
     inline int threadId() const            { return m_threadId; }
-    inline int variant() const             { return (m_variant == xmrig::VARIANT_AUTO ? (m_blob[0] > 6 ? 1 : 0) : m_variant); }
+    inline int variant() const             { return (m_variant == Options::VARIANT_AUTO ? (m_blob[0] > 6 ? 1 : 0) : m_variant); }
     inline size_t size() const             { return m_size; }
     inline uint32_t *nonce()               { return reinterpret_cast<uint32_t*>(m_blob + 39); }
     inline uint32_t diff() const           { return (uint32_t) m_diff; }

@@ -56,7 +56,6 @@ static inline void port_sleep(size_t sec)
 #include "cryptonight.h"
 #include "log/Log.h"
 #include "Options.h"
-#include "xmrig.h"
 
 
 constexpr const char *kSetKernelArgErr = "Error %s when calling clSetKernelArg for kernel %d, argument %d.";
@@ -269,7 +268,7 @@ size_t InitOpenCLGpu(int index, cl_context opencl_ctx, GpuContext* ctx, const ch
     int hasIterations  = MONERO_ITER;
 
 #   if !defined(XMRIG_NO_AEON)
-    if (Options::i()->algo() == xmrig::ALGO_CRYPTONIGHT_LITE) {
+    if (Options::i()->algo() == Options::ALGO_CRYPTONIGHT_LITE) {
         hashMemSize   = AEON_MEMORY;
         threadMemMask = AEON_MASK;
         hasIterations = AEON_ITER;
@@ -438,7 +437,7 @@ std::vector<GpuContext> getAMDDevices(int index)
         LOG_INFO(Options::i()->colors() ? "\x1B[01;32mfound\x1B[0m OpenCL GPU: \x1B[01;37m%s\x1B[0m, cu: \x1B[01;37m%d" : "found OpenCL GPU: %s, cu:", buf, ctx.computeUnits);
 
         clGetDeviceInfo(ctx.DeviceID, CL_DEVICE_NAME, sizeof(buf), buf, nullptr);
-        ctx.name = buf;
+        ctx.deviceName = buf;
 
         ctxVec.push_back(ctx);
     }

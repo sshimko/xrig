@@ -47,6 +47,12 @@ public:
         ALGO_CRYPTONIGHT_LITE, /* CryptoNight-Lite (AEON) */
     };
 
+    enum Variant {
+        VARIANT_AUTO = -1,
+        VARIANT_NONE = 0,
+        VARIANT_V1   = 1
+    };
+
     enum AlgoVariant {
         AV0_AUTO,
         AV1_AESNI,

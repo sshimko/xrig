@@ -66,6 +66,7 @@ public:
     void tick(uint64_t now);
 
     inline bool isReady() const              { return m_state == ConnectedState && m_failures == 0; }
+    inline const char *user() const          { return m_url.user(); }
     inline const char *host() const          { return m_url.host(); }
     inline const char *ip() const            { return m_ip; }
     inline const Job &job() const            { return m_job; }

@@ -52,7 +52,6 @@
 #include "rapidjson/prettywriter.h"
 #include "version.h"
 #include "workers/OclThread.h"
-#include "xrig.h"
 
 
 #ifndef ARRAY_SIZE
@@ -342,8 +341,10 @@ bool Options::parseArg(int key, const char *arg)
     case 4000: /* --port */
     case 1400: /* --platform-index */
     case 1401: /* --intensity */
-    case 1010: /* --variant */
         return parseArg(key, (uint64_t) strtol(arg, nullptr, 10));
+
+    case 1010: /* --variant */
+        return parseArg(key, (int64_t) strtol(arg, nullptr, 10));
 
     case 'b':  /* --background */
     case 'k':  /* --keepalive */
