@@ -48,9 +48,6 @@ install:
   - ps: ren inc include
   - ps: popd
 
-build:
-  project: %APPVEYOR_BUILD_FOLDER%\\build\\xrig.sln
-
 before_build:
   - ps: generate_sln.bat
 
