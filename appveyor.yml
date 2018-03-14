@@ -1,5 +1,5 @@
 # Inspired by https://github.com/clMathLibraries/clBLAS/blob/master/appveyor.yml
-version: 1.0.{build}
+version: {build}
 
 branches:
   only:
@@ -33,19 +33,14 @@ install:
   # This downloads all the opencl header files
   # The cmake build files expect a directory called inc
   - ps: mkdir inc/CL
-  - git clone --depth 1 https://github.com/KhronosGroup/OpenCL-Headers.git inc/CL
+  - git clone --depth 1 https://github.com/KhronosGroup/OpenCL-Headers.git
+  - ps: mv ./OpenCL-Headers/opencl20/CL/* inc/CL
   - ps: wget $opencl_registry/api/2.1/cl.hpp -OutFile inc/CL/cl.hpp
-  # - ps: dir; if( $lastexitcode -eq 0 ){ dir include/CL } else { Write-Output boom }
   # Create the static import lib in a directory called lib, so findopencl() will find it
   - ps: mkdir lib
   - ps: pushd lib
   - cmake -G "NMake Makefiles" ..
   - nmake
-  - ps: popd
-  # Switch to OpenCL 2.0 headers
-  - ps: pushd inc/CL
-  - git fetch origin opencl20:opencl20
-  - git checkout opencl20
   - ps: popd
   # Rename the inc directory to include, so FindOpencl() will find it
   - ps: ren inc include
