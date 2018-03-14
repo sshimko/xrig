@@ -24,11 +24,7 @@ VS_VERSION_INFO VERSIONINFO
         VALUE "FileDescription",  APP_DESC
         VALUE "FileVersion",      APP_VERSION
         VALUE "LegalCopyright",   APP_COPYRIGHT
-<<<<<<< HEAD
-        VALUE "OriginalFilename", "xmrig-nvidia.exe"
-=======
         VALUE "OriginalFilename", "xrig.exe"
->>>>>>> initial commit
         VALUE "ProductName",      APP_NAME
         VALUE "ProductVersion",   APP_VERSION
       END
