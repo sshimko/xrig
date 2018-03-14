@@ -42,10 +42,9 @@ install:
   - cmake -G "NMake Makefiles" ..
   - nmake
   - ps: popd
-  # Switch to OpenCL 2.0 headers
-  - ps: mv ./OpenCL-Headers/opencl20/CL/* inc/CL
-  # Rename the inc directory to include, so FindOpencl() will find it
-  - ps: ren inc include
+  # Create include directory with OpenCL 2.0 headers, so FindOpencl() will find it
+  - ps: mkdir include/CL
+  - ps: mv ./OpenCL-Headers/opencl20/CL/* include/CL
   - ps: popd
 
 before_build:
