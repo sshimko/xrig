@@ -1,4 +1,8 @@
-[![Build Status](https://travis-ci.org/arnesson/xrig.svg?branch=master)](https://travis-ci.org/arnesson/xrig)
+| Platform | Build Status |
+| --- | --- |
+| Linux | [![Build Status](https://travis-ci.org/arnesson/xrig.svg?branch=master)](https://travis-ci.org/arnesson/xrig) |
+| Win64 | [![Build Status](https://ci.appveyor.com/api/projects/status/github/arnesson/xrig?branch=master&svg=true)](https://ci.appveyor.com/project/arnesson/xrig) |
+
 
 # Xrig
 Xrig is a high performance cryptonight miner for AMD cards. Designed for large-scale use of RX Vega.
