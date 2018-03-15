@@ -1,17 +1,11 @@
 # Inspired by https://github.com/clMathLibraries/clBLAS/blob/master/appveyor.yml
 version: Build {build}
 
-branches:
-  only:
-    - master
-
 skip_tags: true
 
 shallow_clone: true
 
 image: Visual Studio 2017
-
-configuration: Release
 
 platform: x64
 
