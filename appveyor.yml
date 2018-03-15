@@ -36,12 +36,11 @@ install:
   - git clone --depth 1 https://github.com/KhronosGroup/OpenCL-Headers.git
   - ps: mv ./OpenCL-Headers/opencl22/CL/* inc/CL
   - ps: wget $opencl_registry/api/2.1/cl.hpp -OutFile inc/CL/cl.hpp
-  # Create the static import lib in a directory called lib, so FindOpencl() will find it
-  - ps: mkdir lib
-  - ps: pushd lib
+  # Create the static import lib in a directory called lib/x86_64, so FindOpencl() will find it
+  - ps: mkdir lib/x86_64
+  - ps: pushd lib/x86_64
   - cmake -G "NMake Makefiles" ..
   - nmake
-  - ps: dir
   - ps: popd
   # Create include directory with OpenCL 2.0 headers, so FindOpencl() will find it
   - ps: mkdir include/CL
