@@ -39,7 +39,7 @@ install:
   # Create the static import lib in a directory called lib/x86_64, so FindOpencl() will find it
   - ps: mkdir lib/x86_64
   - ps: pushd lib/x86_64
-  - cmake -G "NMake Makefiles" ..
+  - cmake -G "NMake Makefiles" ../..
   - nmake
   - ps: popd
   # Create include directory with OpenCL 2.0 headers, so FindOpencl() will find it
