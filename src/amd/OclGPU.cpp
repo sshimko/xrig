@@ -57,6 +57,16 @@ static inline void port_sleep(size_t sec)
 #include "log/Log.h"
 #include "Options.h"
 
+#if defined(__APPLE__)
+#   include <OpenCL/cl_ext.h>
+#else
+#   include <CL/cl_ext.h>
+#endif
+
+#ifndef CL_MEM_USE_PERSISTENT_MEM_AMD
+#define CL_MEM_USE_PERSISTENT_MEM_AMD 0
+#endif
+
 
 constexpr const char *kSetKernelArgErr = "Error %s when calling clSetKernelArg for kernel %d, argument %d.";
 
@@ -280,7 +290,7 @@ size_t InitOpenCLGpu(int index, cl_context opencl_ctx, GpuContext* ctx, const ch
         return OCL_ERR_API;
     }
 
-    ctx->InputBuffer = clCreateBuffer(opencl_ctx, CL_MEM_READ_ONLY, 88, NULL, &ret);
+    ctx->InputBuffer = clCreateBuffer(opencl_ctx, CL_MEM_READ_ONLY | CL_MEM_USE_PERSISTENT_MEM_AMD, 88, NULL, &ret);
     if (ret != CL_SUCCESS) {
         LOG_ERR("Error %s when calling clCreateBuffer to create input buffer.", err_to_str(ret));
         return OCL_ERR_API;
@@ -305,42 +315,42 @@ size_t InitOpenCLGpu(int index, cl_context opencl_ctx, GpuContext* ctx, const ch
         return OCL_ERR_API;
     }
 
-    ctx->ExtraBuffers[1] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, 200 * g_thd, NULL, &ret);
+    ctx->ExtraBuffers[1] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, 200 * g_thd, NULL, &ret);
     if(ret != CL_SUCCESS) {
         LOG_ERR("Error %s when calling clCreateBuffer to create hash states buffer.", err_to_str(ret));
         return OCL_ERR_API;
     }
 
     // Blake-256 branches
-    ctx->ExtraBuffers[2] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
+    ctx->ExtraBuffers[2] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
     if (ret != CL_SUCCESS){
         LOG_ERR("Error %s when calling clCreateBuffer to create Branch 0 buffer.", err_to_str(ret));
         return OCL_ERR_API;
     }
 
     // Groestl-256 branches
-    ctx->ExtraBuffers[3] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
+    ctx->ExtraBuffers[3] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
     if(ret != CL_SUCCESS) {
         LOG_ERR("Error %s when calling clCreateBuffer to create Branch 1 buffer.", err_to_str(ret));
         return OCL_ERR_API;
     }
 
     // JH-256 branches
-    ctx->ExtraBuffers[4] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
+    ctx->ExtraBuffers[4] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
     if (ret != CL_SUCCESS) {
         LOG_ERR("Error %s when calling clCreateBuffer to create Branch 2 buffer.", err_to_str(ret));
         return OCL_ERR_API;
     }
 
     // Skein-512 branches
-    ctx->ExtraBuffers[5] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
+    ctx->ExtraBuffers[5] = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, sizeof(cl_uint) * (g_thd + 2), NULL, &ret);
     if (ret != CL_SUCCESS) {
         LOG_ERR("Error %s when calling clCreateBuffer to create Branch 3 buffer.", err_to_str(ret));
         return OCL_ERR_API;
     }
 
     // Assume we may find up to 0xFF nonces in one run - it's reasonable
-    ctx->OutputBuffer = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE, sizeof(cl_uint) * 0x100, NULL, &ret);
+    ctx->OutputBuffer = clCreateBuffer(opencl_ctx, CL_MEM_READ_WRITE | CL_MEM_USE_PERSISTENT_MEM_AMD, sizeof(cl_uint) * 0x100, NULL, &ret);
     if (ret != CL_SUCCESS) {
         LOG_ERR("Error %s when calling clCreateBuffer to create output buffer.", err_to_str(ret));
         return OCL_ERR_API;
