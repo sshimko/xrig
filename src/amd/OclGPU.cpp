@@ -204,13 +204,36 @@ inline static int getDeviceMaxComputeUnits(cl_device_id id)
 }
 
 
-inline static void getDeviceName(cl_device_id id, char *buf, size_t size)
+inline static std::string getDeviceName(cl_device_id id)
 {
-    if (clGetDeviceInfo(id, 0x4038 /* CL_DEVICE_BOARD_NAME_AMD */, size, buf, nullptr) == CL_SUCCESS) {
-        return;
+    char buf[128] = { 0 };
+
+    if (clGetDeviceInfo(id, 0x4038 /* CL_DEVICE_BOARD_NAME_AMD */, sizeof(buf), buf, nullptr) == CL_SUCCESS) {
+        return buf;
     }
 
-    clGetDeviceInfo(id, CL_DEVICE_NAME, size, buf, nullptr);
+    if (clGetDeviceInfo(id, CL_DEVICE_NAME, sizeof(buf), buf, nullptr) == CL_SUCCESS) {
+        return buf;
+    }
+
+    return "";
+}
+
+
+inline static int getBusId(cl_device_id id)
+{
+#if defined(CL_DEVICE_TOPOLOGY_AMD)
+    cl_device_topology_amd topology;
+    if(clGetDeviceInfo(id, CL_DEVICE_TOPOLOGY_AMD,
+        sizeof(cl_device_topology_amd), &topology, nullptr) != CL_SUCCESS) {
+        // handle error
+    }
+
+    if (topology.raw.type == CL_DEVICE_TOPOLOGY_TYPE_PCIE_AMD) {
+        return (int)topology.pcie.bus;
+    }
+#endif
+    return -1;
 }
 
 
@@ -237,9 +260,9 @@ size_t InitOpenCLGpu(int index, cl_context opencl_ctx, GpuContext* ctx, const ch
         return OCL_ERR_API;
     }
 
-    char buf[128] = { 0 };
-    getDeviceName(ctx->DeviceID, buf, sizeof(buf));
     ctx->computeUnits = getDeviceMaxComputeUnits(ctx->DeviceID);
+    ctx->busId = getBusId(ctx->DeviceID);
+    ctx->deviceName = getDeviceName(ctx->DeviceID);
 
     LOG_INFO(Options::i()->colors() ? "\x1B[01;37m#%d\x1B[0m, GPU \x1B[01;37m#%zu\x1B[0m \x1B[01;32m%s\x1B[0m, intensity: \x1B[01;37m%zu\x1B[0m (%zu/%zu), cu: \x1B[01;37m%d"  : "#%d, GPU #%zu (%s), intensity: %zu (%zu/%zu), cu: %d",
         index, ctx->deviceIdx, ctx->deviceName.c_str(), ctx->rawIntensity, ctx->workSize, MaximumWorkSize, ctx->computeUnits);
@@ -425,6 +448,8 @@ std::vector<GpuContext> getAMDDevices(int index)
         ctx.deviceIdx = i;
         ctx.DeviceID = device_list[i];
         ctx.computeUnits = getDeviceMaxComputeUnits(ctx.DeviceID);
+        ctx.busId = getBusId(ctx.DeviceID);
+        ctx.deviceName = getDeviceName(ctx.DeviceID);
 
         size_t maxMem;
         clGetDeviceInfo(ctx.DeviceID, CL_DEVICE_MAX_MEM_ALLOC_SIZE, sizeof(size_t), &(maxMem), nullptr);
@@ -432,12 +457,7 @@ std::vector<GpuContext> getAMDDevices(int index)
         // if environment variable GPU_SINGLE_ALLOC_PERCENT is not set we can not allocate the full memory
         ctx.freeMem = std::min(ctx.freeMem, maxMem);
 
-        getDeviceName(ctx.DeviceID, buf, sizeof(buf));
-
         LOG_INFO(Options::i()->colors() ? "\x1B[01;32mfound\x1B[0m OpenCL GPU: \x1B[01;37m%s\x1B[0m, cu: \x1B[01;37m%d" : "found OpenCL GPU: %s, cu:", buf, ctx.computeUnits);
-
-        clGetDeviceInfo(ctx.DeviceID, CL_DEVICE_NAME, sizeof(buf), buf, nullptr);
-        ctx.deviceName = buf;
 
         ctxVec.push_back(ctx);
     }
