@@ -88,7 +88,7 @@ void OclCLI::autoConf(std::vector<OclThread*> &threads, int *platformIndex, size
         const size_t rawIntensity      = (maxIntensity / (8 * ctx.computeUnits)) * ctx.computeUnits * 8;
 
         for (int i = 0; i < gpuThreads; i++) {
-            threads.push_back(new OclThread(ctx.deviceIdx, intensity ? *intensity : std::min(rawIntensity, maxIntensity), 8));
+            threads.push_back(new OclThread(ctx.deviceIdx, *intensity ? *intensity : std::min(rawIntensity, maxIntensity), 8));
         }
     }
 }

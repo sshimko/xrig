@@ -457,7 +457,7 @@ std::vector<GpuContext> getAMDDevices(int index)
         // if environment variable GPU_SINGLE_ALLOC_PERCENT is not set we can not allocate the full memory
         ctx.freeMem = std::min(ctx.freeMem, maxMem);
 
-        LOG_INFO(Options::i()->colors() ? "\x1B[01;32mfound\x1B[0m OpenCL GPU: \x1B[01;37m%s\x1B[0m, cu: \x1B[01;37m%d" : "found OpenCL GPU: %s, cu:", buf, ctx.computeUnits);
+        LOG_INFO(Options::i()->colors() ? "\x1B[01;32mfound\x1B[0m OpenCL GPU: \x1B[01;37m%s\x1B[0m, cu: \x1B[01;37m%d" : "found OpenCL GPU: %s, cu:", deviceName.c_str(), ctx.computeUnits);
 
         ctxVec.push_back(ctx);
     }
