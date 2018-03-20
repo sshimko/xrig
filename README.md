@@ -12,6 +12,7 @@ GPU mining based on [Wolf9466](https://github.com/OhGodAPet) and [psychocrypt](h
 <img src="https://i.imgur.com/TFncsi7.png" width="696" >
 -->
 ## Features
+* CryptoNightV7 ready
 * High performance
 * Designed for large-scale use of RX Vega, but will run any AMD card
 * High level of automation necessary for managing many cards
