@@ -33,8 +33,6 @@
 #include "workers/OclThread.h"
 #include "workers/Handle.h"
 #include "workers/Workers.h"
-#include "log/Log.h"
-#include "Options.h"
 
 
 OclWorker::OclWorker(Handle *handle) :
@@ -45,7 +43,8 @@ OclWorker::OclWorker(Handle *handle) :
     m_hashCount(0),
     m_timestamp(0),
     m_count(0),
-    m_sequence(0)
+    m_sequence(0),
+    m_blob()
 {
     const OclThread *thread = handle->gpuThread();
 
@@ -57,8 +56,6 @@ OclWorker::OclWorker(Handle *handle) :
 
 void OclWorker::start()
 {
-	using namespace std::chrono;
-
     cl_uint results[0x100];
 
     while (Workers::sequence() > 0) {
@@ -88,7 +85,6 @@ void OclWorker::start()
             m_count += m_ctx->rawIntensity;
 
             storeStats();
-
             std::this_thread::yield();
         }
 

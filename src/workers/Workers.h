@@ -61,7 +61,6 @@ public:
     static const std::vector<Handle*> &handles()                 { return m_handles; }
     static const std::map<int, std::vector<Handle*>> &gpus()     { return m_gpus; }
 
-
 private:
     static void onReady(void *arg);
     static void onResult(uv_async_t *handle);

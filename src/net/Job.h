@@ -5,6 +5,7 @@
  * Copyright 2014-2016 Wolf9466    <https://github.com/OhGodAPet>
  * Copyright 2016      Jay D Dee   <jayddee246@gmail.com>
  * Copyright 2017-2018 XMR-Stak    <https://github.com/fireice-uk>, <https://github.com/psychocrypt>
+ * Copyright 2018      Lee Clagett <https://github.com/vtnerd>
  * Copyright 2016-2018 XMRig       <https://github.com/xmrig>, <support@xmrig.com>
  *
  *   This program is free software: you can redistribute it and/or modify
@@ -29,7 +30,6 @@
 #include <stdint.h>
 
 
-#include "align.h"
 #include "net/JobId.h"
 #include "Options.h"
 
@@ -52,7 +52,7 @@ public:
     inline const char *coin() const        { return m_coin; }
     inline const uint32_t *nonce() const   { return reinterpret_cast<const uint32_t*>(m_blob + 39); }
     inline const uint8_t *blob() const     { return m_blob; }
-    inline const JobId &id() const     { return m_id; }
+    inline const JobId &id() const         { return m_id; }
     inline int poolId() const              { return m_poolId; }
     inline int threadId() const            { return m_threadId; }
     inline int variant() const             { return (m_variant == Options::VARIANT_AUTO ? (m_blob[0] > 6 ? 1 : 0) : m_variant); }
@@ -63,11 +63,6 @@ public:
     inline void setNicehash(bool nicehash) { m_nicehash = nicehash; }
     inline void setThreadId(int threadId)  { m_threadId = threadId; }
 
-#   ifdef XMRIG_PROXY_PROJECT
-    inline char *rawBlob()                 { return m_rawBlob; }
-    inline const char *rawTarget() const   { return m_rawTarget; }
-#   endif
-
     static bool fromHex(const char* in, unsigned int len, unsigned char* out);
     static inline uint32_t *nonce(uint8_t *blob)   { return reinterpret_cast<uint32_t*>(blob + 39); }
     static inline uint64_t toDiff(uint64_t target) { return 0xFFFFFFFFFFFFFFFFULL / target; }
@@ -76,8 +71,6 @@ public:
     bool operator==(const Job &other) const;
 
 private:
-    VAR_ALIGN(16, uint8_t m_blob[84]); // Max blob size is 84 (75 fixed + 9 variable), aligned to 96. https://github.com/xmrig/xmrig/issues/1 Thanks fireice-uk.
-
     bool m_nicehash;
     char m_coin[5];
     int m_algo;
@@ -87,12 +80,8 @@ private:
     size_t m_size;
     uint64_t m_diff;
     uint64_t m_target;
+    uint8_t m_blob[96]; // Max blob size is 84 (75 fixed + 9 variable), aligned to 96. https://github.com/xmrig/xmrig/issues/1 Thanks fireice-uk.
     JobId m_id;
-
-#   ifdef XMRIG_PROXY_PROJECT
-    VAR_ALIGN(16, char m_rawBlob[169]);
-    VAR_ALIGN(16, char m_rawTarget[17]);
-#   endif
 };
 
 #endif /* __JOB_H__ */
